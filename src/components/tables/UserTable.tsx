@@ -5,12 +5,12 @@ import {
   TableCell,
   TableHeader,
   TableRow,
-} from "../../ui/table";
-import { User } from "../../../Model/User";
-import { Pagination } from "../../../Model/Pagination";
-import UserService from "../../../service/UserService";
+} from "../ui/table";
+import { User } from "../../Model/User";
+import { Pagination } from "../../Model/Pagination";
+import UserService from "../../service/UserService";
 
-export default function DataTable() {
+export default function UserTable() {
   const [users, setUsers] = useState<User[]>([]);
   const [pagination, setPagination] = useState<Pagination>(
     new Pagination(1, 5, 0)
