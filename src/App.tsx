@@ -39,6 +39,8 @@ export default function App() {
 
             {/* Tables */}
             <Route path="/user-tables" element={<BasicTables />} />
+            <Route path="/firmware-tables" element={<BasicTables />} />
+            <Route path="/device-tables" element={<BasicTables />} />
 
             {/* Ui Elements */}
             <Route path="/alerts" element={<Alerts />} />
