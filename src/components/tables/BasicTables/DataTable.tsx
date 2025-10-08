@@ -6,7 +6,6 @@ import {
   TableHeader,
   TableRow,
 } from "../../ui/table";
-import Badge from "../../ui/badge/Badge";
 import { User } from "../../../Model/User";
 import { Pagination } from "../../../Model/Pagination";
 import UserService from "../../../service/UserService";
