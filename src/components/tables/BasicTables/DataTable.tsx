@@ -6,9 +6,9 @@ import {
   TableHeader,
   TableRow,
 } from "../../ui/table";
-import { User } from "../../../Model/User";
-import { Pagination } from "../../../Model/Pagination";
+import { User, Pagination } from "../../../model";
 import UserService from "../../../service/UserService";
+import { UserStateType, RoleType } from "../../../enums";
 
 export default function DataTable() {
   const [users, setUsers] = useState<User[]>([]);
@@ -42,7 +42,7 @@ export default function DataTable() {
 
   useEffect(() => {
     loadData();
-  }, [pagination.page, pagination.limit, stateFilter, roleFilter]); // bỏ search ở đây vì lọc FE
+  }, [pagination.page, pagination.limit, stateFilter, roleFilter]); 
 
   const handlePageChange = (newPage: number) => {
     setPagination(new Pagination(newPage, pagination.limit, pagination.total));
@@ -86,8 +86,11 @@ export default function DataTable() {
             onChange={(e) => setStateFilter(e.target.value || undefined)}
           >
             <option value="">All States</option>
-            <option value="ACTIVE">ACTIVE</option>
-            <option value="INACTIVE">INACTIVE</option>
+              {Object.values(UserStateType).map((type) => (
+                <option key={type} value={type}>
+                  {type}
+            </option>
+          ))}
           </select>
           <select
             className="border p-2 rounded"
@@ -95,8 +98,11 @@ export default function DataTable() {
             onChange={(e) => setRoleFilter(e.target.value || undefined)}
           >
             <option value="">All Roles</option>
-            <option value="ROLE_ADMIN">Admin</option>
-            <option value="ROLE_END_USER">User</option>
+              {Object.values(RoleType).map((role) => (
+                <option key={role.value} value={role.value}>
+                  {role.label}
+            </option>
+          ))}
           </select>
         </div>
 
@@ -118,9 +124,9 @@ export default function DataTable() {
           {/* Header */}
           <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
             <TableRow>
-              <TableCell isHeader className="px-5 py-3 text-start">
+              {/* <TableCell isHeader className="px-5 py-3 text-start">
                 Id
-              </TableCell>
+              </TableCell> */}
               <TableCell isHeader className="px-5 py-3 text-start">
                 Name
               </TableCell>
@@ -141,9 +147,9 @@ export default function DataTable() {
             {filteredUsers.length > 0 ? (
               filteredUsers.map((user) => (
                 <TableRow key={user.id}>
-                <TableCell className="px-5 py-4 sm:px-6 text-start">
+                {/* <TableCell className="px-5 py-4 sm:px-6 text-start">
                 {user.id}
-                </TableCell>
+                </TableCell> */}
                   <TableCell className="px-5 py-4 sm:px-6 text-start">
                     {user.name}
                   </TableCell>

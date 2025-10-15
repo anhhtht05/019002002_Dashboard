@@ -26,7 +26,7 @@ const navItems: NavItem[] = [
   {
     name: "Tables",
     icon: <TableIcon />,
-    subItems: [{ name: "User", path: "/user-tables", pro: false }, { name: "Firmware", path: "/firmware-tables", pro: false }, { name: "Device", path: "/device-tables", pro: false }],
+    subItems: [{ name: "User", path: "/user-tables", pro: false }, { name: "Device", path: "/device-tables", pro: false }, { name: "Firmware", path: "/firmware-tables", pro: false }],
   }
 ];
 

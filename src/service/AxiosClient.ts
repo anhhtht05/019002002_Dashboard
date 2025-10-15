@@ -80,7 +80,7 @@ axiosClient.interceptors.response.use(
         processQueue(err, null);
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
-        window.location.href = "/login";
+        window.location.href = "/signin";
         return Promise.reject(err);
       } finally {
         isRefreshing = false;

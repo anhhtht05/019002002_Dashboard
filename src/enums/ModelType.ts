@@ -1,0 +1,5 @@
+export enum ModelType {
+    ESP32WROOM32 = "ESP32-WROOM-32",
+    ESP8266WROOM32 = "ESP8266-WROOM-32"
+}
+    

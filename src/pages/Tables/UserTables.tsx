@@ -3,7 +3,7 @@ import ComponentCard from "../../components/common/ComponentCard";
 import PageMeta from "../../components/common/PageMeta";
 import DataTable from "../../components/tables/BasicTables/DataTable";
 
-export default function BasicTables() {
+export default function UserTables() {
   return (
     <>
       <PageMeta
