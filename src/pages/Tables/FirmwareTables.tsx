@@ -1,7 +1,7 @@
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import ComponentCard from "../../components/common/ComponentCard";
 import PageMeta from "../../components/common/PageMeta";
-import DataTable from "../../components/tables/BasicTables/DataTable";
+import FirmwareTable from "../../components/tables/BasicTables/FirmwareTable";
 
 export default function FirmwareTables() {
   return (
@@ -14,7 +14,7 @@ export default function FirmwareTables() {
       <div className="space-y-6">
         <ComponentCard title="Firmware Table">
           {/* <BasicTableOne/> */}
-          <DataTable/>
+          <FirmwareTable/>
         </ComponentCard>
       </div>
     </>

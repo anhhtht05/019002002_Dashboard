@@ -7,122 +7,66 @@ import {
   TableRow,
 } from "../../ui/table";
 import { Pagination } from "../../../model";
-import deviceService from "../../../service/DeviceService";
-import { DeviceType, ModelType, HardwareType } from "../../../enums";
+import firmwareService from "../../../service/FirmwareService";
 
-export default function DeviceTable() {
-  const [devices, setDevices] = useState<any[]>([]);
+export default function FirmwareTable() {
+  const [firmwares, setFirmwares] = useState<any[]>([]);
   const [pagination, setPagination] = useState(new Pagination(1, 5, 0));
-
-  // Filters
-  const [deviceTypeFilter, setDeviceTypeFilter] = useState<string | undefined>();
-  const [hardwareFilter, setHardwareFilter] = useState<string | undefined>();
-  const [modelFilter, setModelFilter] = useState<string | undefined>();
   const [search, setSearch] = useState("");
 
   const loadData = async () => {
     try {
-      const res = await deviceService.getDevices(
+      const res = await firmwareService.getFirmwares(
         pagination.page,
-        pagination.limit,
-        deviceTypeFilter,
-        hardwareFilter,
-        modelFilter
+        pagination.limit
       );
-      setDevices(res.data);
+      setFirmwares(res.data);
       setPagination(
         new Pagination(res.pagination.page, res.pagination.limit, res.pagination.total)
       );
     } catch (err) {
-      console.error("Failed to fetch devices:", err);
+      console.error("Failed to fetch firmwares:", err);
     }
   };
 
   useEffect(() => {
     loadData();
-  }, [pagination.page, pagination.limit, deviceTypeFilter, hardwareFilter, modelFilter]);
+  }, [pagination.page, pagination.limit]);
 
   const totalPages = pagination.getTotalPages();
 
-  const filteredDevices = devices.filter(
-    (d) =>
-      d.deviceName?.toLowerCase().includes(search.toLowerCase()) ||
-      d.deviceId?.toLowerCase().includes(search.toLowerCase())
+  const filteredFirmwares = firmwares.filter(
+    (fw) =>
+      fw.name?.toLowerCase().includes(search.toLowerCase()) ||
+      fw.version?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-md dark:border-white/[0.05] dark:bg-gray-900">
-      {/* --- Filter + Search --- */}
+      {/* --- Search --- */}
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        {/* Left filters */}
-        <div className="flex flex-wrap gap-3 items-center">
-          {/* Entries per page */}
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-gray-700 dark:text-gray-300">Show</span>
-            <select
-              className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
-              value={pagination.limit}
-              onChange={(e) =>
-                setPagination(new Pagination(1, Number(e.target.value), pagination.total))
-              }
-            >
-              {[5, 10, 15, 20].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-            <span className="text-gray-700 dark:text-gray-300">entries</span>
-          </div>
-
-          {/* Device Type */}
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-gray-700 dark:text-gray-300">Show</span>
           <select
-            className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm"
-            value={deviceTypeFilter || ""}
-            onChange={(e) => setDeviceTypeFilter(e.target.value || undefined)}
+            className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            value={pagination.limit}
+            onChange={(e) =>
+              setPagination(new Pagination(1, Number(e.target.value), pagination.total))
+            }
           >
-            <option value="">All Types</option>
-            {Object.values(DeviceType).map((type) => (
-              <option key={type} value={type}>
-                {type}
+            {[5, 10, 15, 20].map((n) => (
+              <option key={n} value={n}>
+                {n}
               </option>
             ))}
           </select>
-
-          {/* Hardware */}
-          <select
-            className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm"
-            value={hardwareFilter || ""}
-            onChange={(e) => setHardwareFilter(e.target.value || undefined)}
-          >
-            <option value="">All Hardware</option>
-            {Object.values(HardwareType).map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-
-          {/* Model */}
-          <select
-            className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm"
-            value={modelFilter || ""}
-            onChange={(e) => setModelFilter(e.target.value || undefined)}
-          >
-            <option value="">All Models</option>
-            {Object.values(ModelType).map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
+          <span className="text-gray-700 dark:text-gray-300">entries</span>
         </div>
 
-        {/* Right: Search */}
         <div className="relative w-full md:w-64">
           <input
             type="text"
-            placeholder="Search by name or ID..."
+            placeholder="Search by name or version..."
             className="w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 rounded-md text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -144,7 +88,7 @@ export default function DeviceTable() {
         <Table className="min-w-full text-sm">
           <TableHeader className="bg-gray-50 dark:bg-gray-800">
             <TableRow>
-              {["ID", "Name", "Type", "Hardware", "Serial", "MAC", "Model", "Status"].map(
+              {["Name", "Version", "Description", "File Path", "Size (KB)", "Status"].map(
                 (header) => (
                   <TableCell
                     key={header}
@@ -158,30 +102,31 @@ export default function DeviceTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredDevices.length > 0 ? (
-              filteredDevices.map((d) => (
+            {filteredFirmwares.length > 0 ? (
+              filteredFirmwares.map((fw) => (
                 <TableRow
-                  key={d.deviceId}
+                  key={`${fw.name}-${fw.version}`}
                   className="hover:bg-blue-50 dark:hover:bg-gray-800 transition"
                 >
                   <TableCell className="px-4 py-2 font-medium text-gray-900 dark:text-gray-100">
-                    {d.deviceId}
+                    {fw.name}
                   </TableCell>
-                  <TableCell className="px-4 py-2">{d.deviceName}</TableCell>
-                  <TableCell className="px-4 py-2">{d.deviceType}</TableCell>
-                  <TableCell className="px-4 py-2">{d.hardwareVersion}</TableCell>
-                  <TableCell className="px-4 py-2">{d.serialNumber}</TableCell>
-                  <TableCell className="px-4 py-2">{d.macAddress}</TableCell>
-                  <TableCell className="px-4 py-2">{d.model}</TableCell>
+                  <TableCell className="px-4 py-2">{fw.version}</TableCell>
+                  <TableCell className="px-4 py-2">{fw.description}</TableCell>
+                  <TableCell className="px-4 py-2">{fw.filePath}</TableCell>
+                  <TableCell className="px-4 py-2">{(fw.fileSize / 1024).toFixed(2)}</TableCell>
+                  {/* <TableCell className="px-4 py-2">{fw.checksum}</TableCell> */}
                   <TableCell className="px-4 py-2">
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        d.status === "ONLINE"
+                        fw.status === "DRAFT"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : fw.status === "RELEASED"
                           ? "bg-green-100 text-green-700"
                           : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
                       }`}
                     >
-                      {d.status}
+                      {fw.status}
                     </span>
                   </TableCell>
                 </TableRow>
@@ -189,10 +134,10 @@ export default function DeviceTable() {
             ) : (
               <TableRow>
                 <td
-                  colSpan={8}
+                  colSpan={7}
                   className="text-center py-6 text-gray-500 dark:text-gray-400"
                 >
-                  No devices found
+                  No firmwares found
                 </td>
               </TableRow>
             )}
@@ -203,7 +148,7 @@ export default function DeviceTable() {
       {/* --- Pagination --- */}
       <div className="mt-6 flex flex-col md:flex-row md:justify-between md:items-center gap-3">
         <span className="text-sm text-gray-600 dark:text-gray-400">
-          Page {pagination.page} of {totalPages} | Total {pagination.total} devices
+          Page {pagination.page} of {totalPages} | Total {pagination.total} firmwares
         </span>
         <div className="flex flex-wrap gap-2 justify-center md:justify-end">
           <button
