@@ -1,21 +1,5 @@
 import { apiService } from "./ApiService";
-
-export interface RegisterRequest {
-  name: string;
-  email: string;
-  password: string;
-}
-
-export type AuthResponse = {
-  access_token: string;
-  refresh_token: string;
-  expires_in: number;
-  user: {
-    id: number;
-    role: string;
-    email: string;
-  };
-};
+import { AuthResponse, RegisterRequest, GetUserResponse } from "../model";
 
 export const authService = {
 
@@ -45,8 +29,9 @@ export const authService = {
     return res.data;
   },
 
-  me: async () => {
-    return apiService.get("/api/auth/me");
+  me: async (): Promise<GetUserResponse> => {
+    const res = await apiService.get<GetUserResponse>("/api/auth/me");
+    return res.data;
   },
 
 };
