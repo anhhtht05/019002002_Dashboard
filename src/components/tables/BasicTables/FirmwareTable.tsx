@@ -9,20 +9,26 @@ import {
 import { Firmware, Pagination } from "../../../model";
 import firmwareService from "../../../service/FirmwareService";
 import { UpdateFirmwareRequest } from "../../../Model/UpdateFirmwareRequest";
-import { StatusType } from "../../../enums";
+import { HardwareType, ModelType, RoleType, StatusType } from "../../../enums";
 import UpdateFirmwareModal from "../../modal/UpdateFirmwareModal";
 
 export default function FirmwareTable() {
   const [firmwares, setFirmwares] = useState<any[]>([]);
   const [pagination, setPagination] = useState(new Pagination(1, 5, 0));
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string | undefined>();
+  const [modelFilter, setModelFilter] = useState<string | undefined>();
+  const [hardwareFilter, setHardwareFilter] = useState<string | undefined>();
   const [selectedFirmware, setSelectedFirmware] = useState<any | null>(null);
   const [showModal, setShowModal] = useState(false);
   const loadData = async () => {
     try {
       const res = await firmwareService.getFirmwares(
         pagination.page,
-        pagination.limit
+        pagination.limit,
+        statusFilter,
+        modelFilter,
+        hardwareFilter
       );
       setFirmwares(res.data);
       setPagination(
@@ -38,6 +44,9 @@ export default function FirmwareTable() {
     setSelectedFirmware(firmware);
     setShowModal(true);
   };
+  useEffect(() => {
+    loadData();
+  }, [pagination.page, pagination.limit, statusFilter, hardwareFilter, modelFilter]);
 
   // const handleDelete = async ( fw: any) => {
   //   if (!window.confirm(`Are you sure you want to delete firmware?`)) return;
@@ -87,8 +96,11 @@ export default function FirmwareTable() {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-md dark:border-white/[0.05] dark:bg-gray-900">
-      {/* --- Search --- */}
-      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      {/* --- Filter Section --- */}
+    <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      {/* Left filters */}
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Entries per page */}
         <div className="flex items-center gap-2 text-sm">
           <span className="text-gray-700 dark:text-gray-300">Show</span>
           <select
@@ -102,30 +114,84 @@ export default function FirmwareTable() {
               <option key={n} value={n}>
                 {n}
               </option>
-            ))} 
+            ))}
           </select>
           <span className="text-gray-700 dark:text-gray-300">entries</span>
         </div>
 
-        <div className="relative w-full md:w-64">
-          <input
-            type="text"
-            placeholder="Search by name or version..."
-            className="w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 rounded-md text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="absolute right-3 top-2.5 h-4 w-4 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
-          </svg>
+        {/* --- Filter Group --- */}
+        <div className="flex flex-wrap gap-3">
+          {/* Device Type */}
+          <div className="flex flex-col">
+            <select
+              className="w-36 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm transition"
+              value={statusFilter || ""}
+              onChange={(e) => setStatusFilter(e.target.value || undefined)}
+            >
+              <option value="">All Types</option>
+                          {["RELEASED", "DRAFT"].map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+            </select>
+          </div>
+
+          {/* Hardware */}
+          <div className="flex flex-col">
+            <select
+              className="w-36 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm transition"
+              value={hardwareFilter || ""}
+              onChange={(e) => setHardwareFilter(e.target.value || undefined)}
+            >
+              <option value="">All Hardware</option>
+              {Object.values(HardwareType).map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Model */}
+          <div className="flex flex-col">
+            <select
+              className="w-36 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm transition"
+              value={modelFilter || ""}
+              onChange={(e) => setModelFilter(e.target.value || undefined)}
+            >
+              <option value="">All Models</option>
+              {Object.values(ModelType).map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
+
+      {/* Right: Search */}
+      <div className="relative w-full md:w-64">
+        <input
+          type="text"
+          placeholder="Search by name or ID..."
+          className="w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 rounded-md text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="absolute right-3 top-2.5 h-4 w-4 text-gray-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
+        </svg>
+      </div>
+    </div>
+
 
       {/* --- Table --- */}
       <div className="overflow-x-auto rounded-lg border border-gray-100 dark:border-gray-800">

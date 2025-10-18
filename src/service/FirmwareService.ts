@@ -4,8 +4,13 @@ import { UploadFirmwareRequest } from "../model/UploadFirmwareRequest";
 import { UpdateFirmwareRequest } from "../Model/UpdateFirmwareRequest";
 
 const firmwareService = {
-  getFirmwares: async (page: number, limit: number) => {
-    const params = { page, limit };
+  getFirmwares: async (page: number, limit: number, status?: string,
+    model_compat?: string, 
+    hardware_compat?:string) => {
+      const params: any = { page, limit };
+    if (model_compat) params.model_compat = model_compat;
+    if (hardware_compat) params.hardware_compat = hardware_compat;
+    if (status) params.status = status;
     const res = await axiosClient.get<FirmwareResponse>("/api/v1/firmware", { params });
     return res.data;
   },
