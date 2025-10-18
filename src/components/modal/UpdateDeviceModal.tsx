@@ -28,7 +28,7 @@ const UpdateDeviceModal: React.FC<UpdateDeviceModalProps> = ({ device, onClose }
   const [loading, setLoading] = useState(false);
 
   const handleChange = (key: keyof UpdateDeviceRequest, value: string) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
+    setFormData((prev: UpdateDeviceRequest) => ({ ...prev, [key]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

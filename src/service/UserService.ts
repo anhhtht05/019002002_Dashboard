@@ -1,5 +1,6 @@
 import axiosClient from "./AxiosClient";
 import { UserResponse } from "../Model/UserResponse";
+import { UpdateUserRequest } from "../model";
 
 const userService = {
   getUsers: async (
@@ -17,13 +18,8 @@ const userService = {
 
     return res.data;
   },
-  updateUserState: async (
-    id: number, 
-    state: string
-  ) => {
-    const res = await axiosClient.put<UserResponse>(`/api/admin/users/${id}`, {
-      state,
-    });
+  updateUserState: async (id: string, data: UpdateUserRequest) => {
+    const res = await axiosClient.put<UserResponse>(`/api/admin/users/${id}`, data);
     return res.data;
   }
 };

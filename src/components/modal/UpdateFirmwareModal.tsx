@@ -40,21 +40,21 @@ export default function UpdateFirmwareModal({ firmware, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/40 backdrop-blur-sm transition-all">
-      <div className="relative bg-white dark:bg-dark-800 rounded-2xl shadow-2xl w-full max-w-xl p-8 border border-gray-200 dark:border-dark-600 animate-fadeIn">
+      <div className="relative bg-white dark:bg-dark-800 rounded-2xl shadow-2xl w-[90vw] max-w-5xl p-10 border border-gray-200 dark:border-dark-600 animate-fadeIn">
         {/* Close button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors p-1.5 rounded-full hover:bg-gray-100"
         >
-          <X className="w-5 h-5" />
+          <X className="w-6 h-6" />
         </button>
 
         {/* Title */}
-        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 text-center mb-6">
+        <h2 className="text-3xl font-semibold text-gray-800 dark:text-gray-100 text-center mb-8">
           Update Firmware
         </h2>
-        {/* {console.log(form)} */}
-        <form onSubmit={handleSubmit} className="w-full space-y-6">
+
+        <form onSubmit={handleSubmit} className="w-full space-y-8">
           {/* Description */}
           <div className="w-full">
             <Label>Description</Label>
@@ -67,28 +67,37 @@ export default function UpdateFirmwareModal({ firmware, onClose }: Props) {
             />
           </div>
 
-          {/* Model Compatibility */}
-          <div className="w-full">
-            <MultiSelect
-              label="Model Compatibility"
-              options={Object.values(ModelType).map((v) => ({ text: v, value: v }))}
-              defaultSelected={form.modelCompat}
-              onChange={(values) => handleChange("modelCompat", values)}
-            />
-          </div>
+          {/* Compatibility row */}
+          <div className="flex flex-col md:flex-row gap-6 mt-2">
+            {/* Model Compatibility */}
+            <div className="flex-1">
+              <MultiSelect
+                label="Model Compatibility"
+                options={Object.values(ModelType).map((v) => ({
+                  text: v,
+                  value: v,
+                }))}
+                defaultSelected={form.modelCompat}
+                onChange={(values) => handleChange("modelCompat", values)}
+              />
+            </div>
 
-          {/* Hardware Compatibility */}
-          <div className="w-full">
-            <MultiSelect
-              label="Hardware Compatibility"
-              options={Object.values(HardwareType).map((v) => ({ text: v, value: v }))}
-              defaultSelected={form.hardwareCompat}
-              onChange={(values) => handleChange("hardwareCompat", values)}
-            />
+            {/* Hardware Compatibility */}
+            <div className="flex-1">
+              <MultiSelect
+                label="Hardware Compatibility"
+                options={Object.values(HardwareType).map((v) => ({
+                  text: v,
+                  value: v,
+                }))}
+                defaultSelected={form.hardwareCompat}
+                onChange={(values) => handleChange("hardwareCompat", values)}
+              />
+            </div>
           </div>
 
           {/* Status */}
-          <div className="w-full">
+          <div className="w-full mt-4">
             <Label>Status</Label>
             <select
               value={form.status}

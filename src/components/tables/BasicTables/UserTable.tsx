@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../ui/table";
-import { User, Pagination } from "../../../model";
+import { User, Pagination, UpdateUserRequest } from "../../../model";
 import UserService from "../../../service/UserService";
 import { UserStateType, RoleType } from "../../../enums";
 
@@ -62,6 +62,21 @@ export default function UserTable() {
         return "bg-green-100 text-green-700";
       default:
         return "bg-gray-100 text-gray-700";
+    }
+  };
+  
+  const handleUserUpdate = async (userId: string, updatedFields: Partial<UpdateUserRequest>) => {
+    try {
+      console.log(updatedFields);
+      await UserService.updateUserState(userId, updatedFields);
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId ? { ...u, ...updatedFields } : u
+        )
+      );
+    } catch (err) {
+      console.error("Update user failed:", err);
+      alert("Failed to update user");
     }
   };
   
@@ -184,30 +199,25 @@ export default function UserTable() {
                           : "bg-red-100 text-red-700"
                       }`}
                       value={user.state}
-                      onChange={async (e) => {
-                        const newState = e.target.value;
-                        try {
-                          await UserService.updateUserState(user.id, newState);
-                          setUsers((prev) =>
-                            prev.map((u) =>
-                              u.id === user.id ? { ...u, state: newState } : u
-                            )
-                          );
-                        } catch (err) {
-                          console.error("Update state failed:", err);
-                        }
-                      }}
+                      onChange={ (e) =>
+                        handleUserUpdate(user.id.toString(), { state: e.target.value })}
                     >
                       <option value="ACTIVE">ACTIVE</option>
                       <option value="INACTIVE">INACTIVE</option>
                     </select>
                   </TableCell>
-                  <TableCell className="px-5 py-4 text-start">
-                    <span
-                      className={`px-2 py-1 rounded text-sm font-medium ${getRoleColor(user.role)}`}
+                  <TableCell>
+                    <select
+                      className={`px-2 py-1 rounded text-sm font-medium border-0 cursor-pointer ${getRoleColor(user.role)}`}
+                      value={user.role}
+                      onChange={(e) => handleUserUpdate(user.id, { role: e.target.value })}
                     >
-                      {Object.values(RoleType).find(r => r.value === user.role)?.label || "Unknown"}
-                    </span>
+                      {Object.values(RoleType).map((r) => (
+                        <option key={r.value} value={r.value}>
+                          {r.label}
+                        </option>
+                      ))}
+                    </select>
                   </TableCell>
                 </TableRow>
               ))

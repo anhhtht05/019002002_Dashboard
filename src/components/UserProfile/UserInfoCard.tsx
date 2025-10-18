@@ -5,26 +5,48 @@ import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import { useEffect, useState } from "react";
 import { authService } from "../../service/AuthService";
-import { GetUserResponse } from "../../model";
+import { GetUserResponse, UpdateUserRequest } from "../../model";
+import userService from "../../service/UserService";
 
 export default function UserInfoCard() {
   const { isOpen, openModal, closeModal } = useModal();
-  const handleSave = () => {
-    // Handle save logic here
-    closeModal();
-  };
   const [user, setUser] = useState<GetUserResponse | null>(null);
+  const [form, setForm] = useState<Partial<UpdateUserRequest>>({});
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const data = await authService.me();
         setUser(data);
+        setForm({
+          name: data.name,
+          email: data.email
+        });
       } catch (error) {
         console.error("Failed to fetch user:", error);
       }
     };
     fetchUser();
   }, []);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    if (!user?.id) return;
+    setLoading(true);
+    try {
+      await userService.updateUserState(user.id, form);
+      setUser((prev) => (prev ? { ...prev, ...form } : prev));
+      closeModal();
+    } catch (error) {
+      console.error("Failed to update user:", error);
+      alert("Failed to update user");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -155,7 +177,7 @@ export default function UserInfoCard() {
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                   <div className="col-span-2 lg:col-span-1">
                     <Label>Name</Label>
-                    <Input type="text" value={user?.name}/>
+                    <Input type="text"  name="name" value={form.name || ""} onChange={handleChange}/>
                   </div>
 
                   {/* <div className="col-span-2 lg:col-span-1">
@@ -165,7 +187,7 @@ export default function UserInfoCard() {
 
                   <div className="col-span-2 lg:col-span-1">
                     <Label>Email</Label>
-                    <Input type="text" value={user?.email} />
+                    <Input type="text" name="email" value={form.email || ""} onChange={handleChange}/>
                   </div>
 
                   {/* <div className="col-span-2 lg:col-span-1">
@@ -184,8 +206,8 @@ export default function UserInfoCard() {
               <Button size="sm" variant="outline" onClick={closeModal}>
                 Close
               </Button>
-              <Button size="sm" onClick={handleSave}>
-                Save Changes
+              <Button size="sm" onClick={handleSave} disabled={loading}>
+              {loading ? "Saving..." : "Save Changes"}
               </Button>
             </div>
           </form>
