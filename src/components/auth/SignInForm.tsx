@@ -6,6 +6,7 @@ import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
 import { authService } from "../../service/AuthService";
+import Loading from "../../loading/Loading";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -13,14 +14,18 @@ export default function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
+    setLoading(true);
     e.preventDefault();
     try {
       await authService.login(email, password);
       navigate("/");
     } catch (err) {
       console.error("Login failed", err);
+    } finally {
+      setLoading(false);
     }
   };
   // const handleSubmit = async (e: React.FormEvent) => {
@@ -38,6 +43,8 @@ export default function SignInForm() {
   //   }
   // };  
   return (
+    <>
+    {loading && <Loading />}
     <div className="flex flex-col flex-1">
       <div className="w-full max-w-md pt-10 mx-auto">
         <Link
@@ -118,7 +125,7 @@ export default function SignInForm() {
                   </Link>
                 </div>
                 <div >
-                  <Button type="submit">Sign in</Button>
+                  <Button type="submit" disabled={loading}>Sign in</Button>
                 </div>
               </div>
             </form>
@@ -138,5 +145,6 @@ export default function SignInForm() {
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -6,6 +6,7 @@ import Button from "../ui/button/Button.tsx";
 import { authService } from "../../service/AuthService";
 import { RegisterRequest } from "../../model/RegisterRequest";
 import { EyeIcon, EyeCloseIcon } from "../../icons";
+import Loading from "../../loading/Loading.tsx";
 
 interface RegisterUserModalProps {
   onClose: () => void;
@@ -21,7 +22,6 @@ const RegisterUserModal: React.FC<RegisterUserModalProps> = ({ onClose }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ✅ riêng biệt từng mắt
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -40,7 +40,7 @@ const RegisterUserModal: React.FC<RegisterUserModalProps> = ({ onClose }) => {
     setLoading(true);
     try {
       const res = await authService.register(formData);
-      alert("Add user successfully!");
+      // alert("Add user successfully!");
       console.log("Response:", res);
       onClose();
     } catch (err: any) {
@@ -56,6 +56,8 @@ const RegisterUserModal: React.FC<RegisterUserModalProps> = ({ onClose }) => {
   };
 
   return (
+    <>
+    {loading && <Loading />}
     <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/40 backdrop-blur-sm transition-all">
       <div className="relative bg-white dark:bg-dark-800 rounded-2xl shadow-2xl w-[90vw] max-w-md p-8 border border-gray-200 dark:border-dark-600 animate-fadeIn">
         {/* Close Button */}
@@ -160,11 +162,12 @@ const RegisterUserModal: React.FC<RegisterUserModalProps> = ({ onClose }) => {
             disabled={loading}
             className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white text-lg py-3.5 rounded-lg shadow-md active:scale-[0.98] transition-all"
           >
-            {loading ? "Add User..." : "Add User"}
+            Add User
           </Button>
         </form>
       </div>
     </div>
+    </>
   );
 };
 

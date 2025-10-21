@@ -1,10 +1,11 @@
 import { useState } from "react";
 import firmwareService from "../../service/FirmwareService";
 import { X } from "lucide-react";
-import { UpdateFirmwareRequest } from "../../Model/UpdateFirmwareRequest";
+import { UpdateFirmwareRequest } from "../../model/UpdateFirmwareRequest";
 import { ModelType, HardwareType } from "../../enums";
 import MultiSelect from "../form/MultiSelect";
 import Label from "../form/Label";
+import Loading from "../../loading/Loading.tsx";
 
 interface Props {
   firmware: any;
@@ -32,13 +33,15 @@ export default function UpdateFirmwareModal({ firmware, onClose }: Props) {
       onClose();
     } catch (err) {
       console.error("Update failed:", err);
-      alert("Failed to update firmware");
+      // alert("Failed to update firmware");
     } finally {
       setLoading(false);
     }
   };
 
   return (
+    <>
+    {loading && <Loading />}
     <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/40 backdrop-blur-sm transition-all">
       <div className="relative bg-white dark:bg-dark-800 rounded-2xl shadow-2xl w-[90vw] max-w-5xl p-10 border border-gray-200 dark:border-dark-600 animate-fadeIn">
         {/* Close button */}
@@ -115,10 +118,11 @@ export default function UpdateFirmwareModal({ firmware, onClose }: Props) {
             disabled={loading}
             className="w-full mt-4 rounded-lg bg-blue-600 text-white py-3 font-medium hover:bg-blue-700 active:scale-[0.98] disabled:bg-gray-400 transition-all duration-200 shadow-md"
           >
-            {loading ? "Updating..." : "Update Firmware"}
+            Update Firmware
           </button>
         </form>
       </div>
     </div>
+    </>
   );
 }

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { authService } from "../../service/AuthService";
 import { GetUserResponse, UpdateUserRequest } from "../../model";
 import userService from "../../service/UserService";
+import Loading from "../../loading/Loading";
 
 export default function UserInfoCard() {
   const { isOpen, openModal, closeModal } = useModal();
@@ -15,6 +16,7 @@ export default function UserInfoCard() {
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     const fetchUser = async () => {
+      setLoading(true);
       try {
         const data = await authService.me();
         setUser(data);
@@ -24,6 +26,8 @@ export default function UserInfoCard() {
         });
       } catch (error) {
         console.error("Failed to fetch user:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchUser();
@@ -48,6 +52,8 @@ export default function UserInfoCard() {
     }
   };
   return (
+  <>
+    {loading && <Loading />}
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div>
@@ -206,13 +212,14 @@ export default function UserInfoCard() {
               <Button size="sm" variant="outline" onClick={closeModal}>
                 Close
               </Button>
-              <Button size="sm" onClick={handleSave} disabled={loading}>
-              {loading ? "Saving..." : "Save Changes"}
+              <Button size="sm" onClick={handleSave} disabled={loading} >
+                Save Changes
               </Button>
             </div>
           </form>
         </div>
       </Modal>
     </div>
+    </>
   );
 }

@@ -24,7 +24,7 @@ export default function UserDropdown() {
           setUser(data);
         } catch (error) {
           console.error("Failed to fetch user:", error);
-        }
+        } 
       };
       fetchUser();
     }, []);

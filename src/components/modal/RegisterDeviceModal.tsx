@@ -5,6 +5,7 @@ import Label from "../form/Label.tsx";
 import Input from "../form/input/InputField.tsx";
 import Select from "../form/Select.tsx";
 import { DeviceType, ModelType, HardwareType } from "../../enums";
+import Loading from "../../loading/Loading.tsx";
 
 interface RegisterDeviceModalProps {
   onClose: () => void;
@@ -33,7 +34,7 @@ const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose }) =>
     setLoading(true);
     try {
       const res = await deviceService.registerDevice(formData);
-      alert("Add device successfully!");
+      // alert("Add device successfully!");
       console.log("Response:", res);
       onClose();
     } catch (err: any) {
@@ -49,6 +50,8 @@ const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose }) =>
   };
 
   return (
+    <>
+    {loading && <Loading />}
     <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/40 backdrop-blur-sm transition-all">
       <div className="relative bg-white dark:bg-dark-800 rounded-2xl shadow-2xl w-[90vw] max-w-5xl p-10 border border-gray-200 dark:border-dark-600 animate-fadeIn">
         
@@ -165,11 +168,12 @@ const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose }) =>
             disabled={loading}
             className="mt-8 w-full rounded-lg bg-blue-600 text-white py-3.5 font-medium text-lg hover:bg-blue-700 active:scale-[0.98] disabled:bg-gray-400 transition-all duration-200 shadow-md"
           >
-            {loading ? "Add device..." : "Add device"}
+            Add device
           </button>
         </form>
       </div>
     </div>
+    </>
   );
 };
 

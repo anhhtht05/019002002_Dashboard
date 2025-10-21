@@ -9,6 +9,7 @@ import {
 import { User, Pagination, UpdateUserRequest } from "../../../model";
 import UserService from "../../../service/UserService";
 import { UserStateType, RoleType } from "../../../enums";
+import Loading from "../../../loading/Loading";
 
 export default function UserTable() {
   const [users, setUsers] = useState<User[]>([]);
@@ -74,6 +75,7 @@ export default function UserTable() {
     userId: string,
     updatedFields: Partial<UpdateUserRequest>
   ) => {
+    setLoading(true);
     try {
       await UserService.updateUserState(userId, updatedFields);
       setUsers((prev) =>
@@ -82,12 +84,16 @@ export default function UserTable() {
     } catch (err) {
       console.error("Update user failed:", err);
       alert("Failed to update user");
+    }  finally {
+      setLoading(false);
     }
   };
 
   const totalPages = pagination.getTotalPages();
 
   return (
+    <>
+    {loading && <Loading />}
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03] p-4">
       {/* Header: Search + Filters */}
       <div className="mb-4 flex flex-wrap justify-between items-center gap-4">
@@ -195,16 +201,7 @@ export default function UserTable() {
           </TableHeader>
 
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {loading ? (
-              <TableRow>
-                <td
-                  colSpan={4}
-                  className="text-center py-4 text-gray-500"
-                >
-                  Loading...
-                </td>
-              </TableRow>
-            ) : users.length > 0 ? (
+            { users.length > 0 ? (
               users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell className="px-5 py-4 text-start">
@@ -298,5 +295,6 @@ export default function UserTable() {
         </div>
       </div>
     </div>
+  </>
   );
 }

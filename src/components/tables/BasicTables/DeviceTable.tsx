@@ -11,11 +11,14 @@ import deviceService from "../../../service/DeviceService";
 import { DeviceType, ModelType, HardwareType, StatusDeviceType } from "../../../enums";
 import { UpdateDeviceRequest } from "../../../model";
 import UpdateDeviceModal from "../../modal/UpdateDeviceModal";
+import Loading from "../../../loading/Loading";
+
 export default function DeviceTable() {
   const [devices, setDevices] = useState<any[]>([]);
   const [pagination, setPagination] = useState(new Pagination(1, 5, 0));
   const [selectedDevice, setSelectedDevice] = useState<UpdateDeviceRequest | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   // Filters
   const [deviceTypeFilter, setDeviceTypeFilter] = useState<string | undefined>();
   const [hardwareFilter, setHardwareFilter] = useState<string | undefined>();
@@ -23,6 +26,7 @@ export default function DeviceTable() {
   const [search, setSearch] = useState("");
 
   const loadData = async () => {
+    setLoading(true);
     try {
       const res = await deviceService.getDevices(
         pagination.page,
@@ -38,21 +42,25 @@ export default function DeviceTable() {
       );
     } catch (err) {
       console.error("Failed to fetch devices:", err);
+    } finally {
+      setLoading(false);
     }
   };
   const handleDelete = async (device: UpdateDeviceRequest) => {
     if (!window.confirm(`Are you sure you want to mark device ${device.deviceId} as deleted?`)) return;
-  
+    setLoading(true);
     try {
       const updated = { ...device, status: StatusDeviceType.DELETED.toString() };
       await deviceService.updateDevice(updated);
   
-      alert(`Device ${device.deviceId} marked as deleted`);
+      // alert(`Device ${device.deviceId} marked as deleted`);
       loadData();
     } catch (err: any) {
       console.error("Failed to delete:", err);
       alert(err.response?.data?.message || "Failed to update device status");
-    }
+    } finally {
+    setLoading(false);
+  }
   };
 
   const handleEdit = (device: UpdateDeviceRequest) => {
@@ -67,6 +75,8 @@ export default function DeviceTable() {
   const totalPages = pagination.getTotalPages();
 
   return (
+    <>
+    {loading && <Loading />}
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-md dark:border-white/[0.05] dark:bg-gray-900">
       {/* --- Filter + Search --- */}
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -304,5 +314,6 @@ export default function DeviceTable() {
         />
       )}
     </div>
+  </>
   );
 }

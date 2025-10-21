@@ -1,6 +1,7 @@
 import axiosClient from "./AxiosClient";
 import { FirmwareResponse } from "../model";
-import { UploadFirmwareRequest, UpdateFirmwareRequest } from "../model";
+import { UpdateFirmwareRequest } from "../model";
+import { UploadFirmwareRequest } from "../model/UploadFirmwareRequest";
 
 const firmwareService = {
   getFirmwares: async (page: number, limit: number, status?: string,

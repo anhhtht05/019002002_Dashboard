@@ -6,6 +6,7 @@ import Input from "../form/input/InputField.tsx";
 import Select from "../form/Select.tsx";
 import { DeviceType, ModelType, HardwareType } from "../../enums";
 import { UpdateDeviceRequest } from "../../model/UpdateDeviceRequest.ts";
+import Loading from "../../loading/Loading.tsx";
 
 interface UpdateDeviceModalProps {
   device: UpdateDeviceRequest;
@@ -36,7 +37,7 @@ const UpdateDeviceModal: React.FC<UpdateDeviceModalProps> = ({ device, onClose }
     setLoading(true);
     try {
       await deviceService.updateDevice(formData);
-      alert("Device updated successfully!");
+      // alert("Device updated successfully!");
       onClose();
     } catch (err: any) {
       console.error("Update failed:", err);
@@ -51,6 +52,8 @@ const UpdateDeviceModal: React.FC<UpdateDeviceModalProps> = ({ device, onClose }
   };
 
   return (
+    <>
+    {loading && <Loading />}
     <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/40 backdrop-blur-sm transition-all">
       <div className="relative bg-white dark:bg-dark-800 rounded-2xl shadow-2xl w-[90vw] max-w-5xl p-10 border border-gray-200 dark:border-dark-600 animate-fadeIn">
         
@@ -178,11 +181,12 @@ const UpdateDeviceModal: React.FC<UpdateDeviceModalProps> = ({ device, onClose }
             disabled={loading}
             className="mt-8 w-full rounded-lg bg-blue-600 text-white py-3.5 font-medium text-lg hover:bg-blue-700 active:scale-[0.98] disabled:bg-gray-400 transition-all duration-200 shadow-md"
           >
-            {loading ? "Saving..." : "Save Changes"}
+            Save Changes
           </button>
         </form>
       </div>
     </div>
+    </>
   );
 };
 

@@ -4,15 +4,18 @@ import UserService from "../../service/UserService";
 import deviceService from "../../service/DeviceService";
 import firmwareService from "../../service/FirmwareService";
 import { Pagination } from "../../model";
+import Loading from "../../loading/Loading";
 
 export default function EcommerceMetrics() {
   const [userTotal, setUserTotal] = useState(0);
   const [deviceTotal, setDeviceTotal] = useState(0);
   const [firmwareTotal, setFirmwareTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const pagination = new Pagination(1, 1, 0); 
 
   const loadAllData = async () => {
+    setLoading(true);
     try {
       const [userRes, deviceRes, firmwareRes] = await Promise.all([
         UserService.getUsers(pagination.page, pagination.limit),
@@ -25,7 +28,9 @@ export default function EcommerceMetrics() {
       setFirmwareTotal(firmwareRes.pagination.total || 0);
     } catch (err) {
       console.error("Failed to fetch metrics:", err);
-    }
+    } finally {
+      setLoading(false);
+      }
   };
 
   useEffect(() => {
@@ -33,6 +38,8 @@ export default function EcommerceMetrics() {
   }, []);
 
   return (
+    <>
+    {loading && <Loading />}
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
       {/* Users */}
       <div className="flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] w-full">
@@ -79,5 +86,6 @@ export default function EcommerceMetrics() {
         </div>
       </div>
     </div>
+    </>
   );
 }

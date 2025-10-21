@@ -8,6 +8,7 @@ import { authService } from "../../service/AuthService";
 import { GetUserResponse } from "../../model";
 import { RoleType } from "../../enums";
 import { EyeIcon, EyeCloseIcon } from "../../icons";
+import Loading from "../../loading/Loading";
 
 export default function UserMetaCard() {
   const { isOpen, openModal, closeModal } = useModal();
@@ -78,6 +79,7 @@ export default function UserMetaCard() {
 
   return (
     <>
+    {loading && <Loading />}
       {/* --- User Card --- */}
       <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
@@ -223,11 +225,9 @@ export default function UserMetaCard() {
                 size="sm"
                 type="submit"
                 disabled={loading}
-                className={`w-32 bg-blue-600 text-white hover:bg-blue-700 ${
-                  loading ? "opacity-70 cursor-not-allowed" : ""
-                }`}
+                className={`w-32 bg-blue-600 text-white hover:bg-blue-700 opacity-70 cursor-not-allowed `}
               >
-                {loading ? "Saving..." : "Save Changes"}
+                Save Changes
               </Button>
             </div>
           </form>

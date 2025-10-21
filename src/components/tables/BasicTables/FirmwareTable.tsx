@@ -12,6 +12,7 @@ import { UpdateFirmwareRequest } from "../../../model";
 import { HardwareType, ModelType } from "../../../enums";
 import UpdateFirmwareModal from "../../modal/UpdateFirmwareModal";
 import { StatusFirmwareType } from "../../../enums/StatusFimwareType";
+import Loading from "../../../loading/Loading";
 
 export default function FirmwareTable() {
   const [firmwares, setFirmwares] = useState<any[]>([]);
@@ -22,7 +23,10 @@ export default function FirmwareTable() {
   const [hardwareFilter, setHardwareFilter] = useState<string | undefined>();
   const [selectedFirmware, setSelectedFirmware] = useState<any | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const loadData = async () => {
+    setLoading(true);
     try {
       const res = await firmwareService.getFirmwares(
         pagination.page,
@@ -38,6 +42,8 @@ export default function FirmwareTable() {
       );
     } catch (err) {
       console.error("Failed to fetch firmwares:", err);
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -64,9 +70,8 @@ export default function FirmwareTable() {
   // };
   const handleDelete = async (fw: Firmware) => {
     if (!window.confirm("Are you sure you want to delete this firmware?")) return;
-    console.log(fw);
+    setLoading(true);
     try {
-      // chỉ gửi phần cần thiết — status cập nhật
       const updateRequest: UpdateFirmwareRequest = {
         description: fw.description,
         modelCompat: fw.modelCompat,
@@ -76,21 +81,21 @@ export default function FirmwareTable() {
   
       await firmwareService.updateFirmware(fw.id, updateRequest);
   
-      alert("Firmware status updated to DELETED successfully!");
+      // alert("Firmware status updated to DELETED successfully!");
       loadData();
     } catch (err: any) {
       console.error("Failed to update firmware status:", err);
       alert(err.response?.data?.message || "Failed to update status");
+    }  finally {
+      setLoading(false);
     }
   };
-  
-  useEffect(() => {
-    loadData();
-  }, [pagination.page, pagination.limit]);
 
   const totalPages = pagination.getTotalPages();
 
   return (
+    <>
+    {loading && <Loading />}
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-md dark:border-white/[0.05] dark:bg-gray-900">
       {/* --- Filter Section --- */}
     <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -338,5 +343,6 @@ export default function FirmwareTable() {
         />
       )}
     </div>
+  </>
   );
 }
