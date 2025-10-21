@@ -1,5 +1,3 @@
-import { StatusType } from "../enums";
-
 export interface UpdateUserRequest {
     name?:string;
     email?:string;

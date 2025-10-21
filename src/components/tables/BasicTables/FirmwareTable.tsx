@@ -8,9 +8,10 @@ import {
 } from "../../ui/table";
 import { Firmware, Pagination } from "../../../model";
 import firmwareService from "../../../service/FirmwareService";
-import { UpdateFirmwareRequest } from "../../../Model/UpdateFirmwareRequest";
-import { HardwareType, ModelType, RoleType, StatusType } from "../../../enums";
+import { UpdateFirmwareRequest } from "../../../model";
+import { HardwareType, ModelType } from "../../../enums";
 import UpdateFirmwareModal from "../../modal/UpdateFirmwareModal";
+import { StatusFirmwareType } from "../../../enums/StatusFimwareType";
 
 export default function FirmwareTable() {
   const [firmwares, setFirmwares] = useState<any[]>([]);
@@ -28,7 +29,8 @@ export default function FirmwareTable() {
         pagination.limit,
         statusFilter,
         modelFilter,
-        hardwareFilter
+        hardwareFilter,
+        search
       );
       setFirmwares(res.data);
       setPagination(
@@ -46,7 +48,7 @@ export default function FirmwareTable() {
   };
   useEffect(() => {
     loadData();
-  }, [pagination.page, pagination.limit, statusFilter, hardwareFilter, modelFilter]);
+  }, [pagination.page, pagination.limit, statusFilter, hardwareFilter, modelFilter, search]);
 
   // const handleDelete = async ( fw: any) => {
   //   if (!window.confirm(`Are you sure you want to delete firmware?`)) return;
@@ -69,7 +71,7 @@ export default function FirmwareTable() {
         description: fw.description,
         modelCompat: fw.modelCompat,
         hardwareCompat: fw.hardwareCompat,
-        status: StatusType.DELETED.toString(),
+        status: StatusFirmwareType.DELETED.toString(),
       };
   
       await firmwareService.updateFirmware(fw.id, updateRequest);
@@ -87,12 +89,6 @@ export default function FirmwareTable() {
   }, [pagination.page, pagination.limit]);
 
   const totalPages = pagination.getTotalPages();
-
-  const filteredFirmwares = firmwares.filter(
-    (fw) =>
-      fw.name?.toLowerCase().includes(search.toLowerCase()) ||
-      fw.version?.toLowerCase().includes(search.toLowerCase())
-  );
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-md dark:border-white/[0.05] dark:bg-gray-900">
@@ -121,19 +117,22 @@ export default function FirmwareTable() {
 
         {/* --- Filter Group --- */}
         <div className="flex flex-wrap gap-3">
-          {/* Device Type */}
+          {/* Status Firmware */}
           <div className="flex flex-col">
             <select
               className="w-36 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm transition"
               value={statusFilter || ""}
-              onChange={(e) => setStatusFilter(e.target.value || undefined)}
+              onChange={(e) => {
+                setPagination(new Pagination(1, pagination.limit, pagination.total));
+                setStatusFilter(e.target.value || undefined);
+              }}
             >
               <option value="">All Types</option>
-                          {["RELEASED", "DRAFT"].map((type) => (
+                {["RELEASED", "DRAFT"].map((type) => (
               <option key={type} value={type}>
                 {type}
               </option>
-            ))}
+              ))}
             </select>
           </div>
 
@@ -142,7 +141,10 @@ export default function FirmwareTable() {
             <select
               className="w-36 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm transition"
               value={hardwareFilter || ""}
-              onChange={(e) => setHardwareFilter(e.target.value || undefined)}
+              onChange={(e) => {
+                setPagination(new Pagination(1, pagination.limit, pagination.total));
+                setHardwareFilter(e.target.value || undefined);
+              }}
             >
               <option value="">All Hardware</option>
               {Object.values(HardwareType).map((type) => (
@@ -158,7 +160,10 @@ export default function FirmwareTable() {
             <select
               className="w-36 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm transition"
               value={modelFilter || ""}
-              onChange={(e) => setModelFilter(e.target.value || undefined)}
+              onChange={(e) => {
+                setPagination(new Pagination(1, pagination.limit, pagination.total));
+                setModelFilter(e.target.value || undefined);
+              }}
             >
               <option value="">All Models</option>
               {Object.values(ModelType).map((type) => (
@@ -178,7 +183,10 @@ export default function FirmwareTable() {
           placeholder="Search by name or ID..."
           className="w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 rounded-md text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setPagination(new Pagination(1, pagination.limit, pagination.total));
+            setSearch(e.target.value);
+          }}
         />
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -212,8 +220,8 @@ export default function FirmwareTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredFirmwares.length > 0 ? (
-              filteredFirmwares.map((fw) => (
+            {firmwares.length > 0 ? (
+              firmwares.map((fw) => (
                 <TableRow
                   key={`${fw.name}-${fw.version}`}
                   className="hover:bg-blue-50 dark:hover:bg-gray-800 transition"

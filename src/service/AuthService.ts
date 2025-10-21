@@ -23,6 +23,10 @@ export const authService = {
     }
     return res.data;
   },
+  updatePassword: async (oldPassword: string, newPassword: string) => {
+    const res = await apiService.put<AuthResponse>("/api/auth/update-password", { oldPassword, newPassword });
+    return res.data;
+  },
 
   refreshToken: async (refreshToken: string): Promise<{ access_token: string }> => {
     const res = await apiService.post<{ access_token: string }>("/api/auth/refresh", { refresh_token: refreshToken });
@@ -33,5 +37,6 @@ export const authService = {
     const res = await apiService.get<GetUserResponse>("/api/auth/me");
     return res.data;
   },
+
 
 };

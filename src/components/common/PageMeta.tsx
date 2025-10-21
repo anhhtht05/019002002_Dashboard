@@ -3,13 +3,15 @@ import { HelmetProvider, Helmet } from "react-helmet-async";
 const PageMeta = ({
   title,
   description,
+  meta
 }: {
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
+  meta?: string;
 }) => (
   <Helmet>
-    <title>{title}</title>
-    <meta name="description" content={description} />
+    <title>{"Admin Comnosoft"}</title>
+    <meta name="description" content={meta} />
   </Helmet>
 );
 

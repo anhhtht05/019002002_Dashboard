@@ -8,8 +8,8 @@ import {
 } from "../../ui/table";
 import { Pagination } from "../../../model";
 import deviceService from "../../../service/DeviceService";
-import { DeviceType, ModelType, HardwareType, StatusType } from "../../../enums";
-import { UpdateDeviceRequest } from "../../../Model/UpdateDeviceRequest";
+import { DeviceType, ModelType, HardwareType, StatusDeviceType } from "../../../enums";
+import { UpdateDeviceRequest } from "../../../model";
 import UpdateDeviceModal from "../../modal/UpdateDeviceModal";
 export default function DeviceTable() {
   const [devices, setDevices] = useState<any[]>([]);
@@ -29,7 +29,8 @@ export default function DeviceTable() {
         pagination.limit,
         deviceTypeFilter,
         hardwareFilter,
-        modelFilter
+        modelFilter, 
+        search
       );
       setDevices(res.data);
       setPagination(
@@ -43,7 +44,7 @@ export default function DeviceTable() {
     if (!window.confirm(`Are you sure you want to mark device ${device.deviceId} as deleted?`)) return;
   
     try {
-      const updated = { ...device, status: StatusType.DELETED.toString() };
+      const updated = { ...device, status: StatusDeviceType.DELETED.toString() };
       await deviceService.updateDevice(updated);
   
       alert(`Device ${device.deviceId} marked as deleted`);
@@ -61,15 +62,9 @@ export default function DeviceTable() {
   };
   useEffect(() => {
     loadData();
-  }, [pagination.page, pagination.limit, deviceTypeFilter, hardwareFilter, modelFilter]);
+  }, [pagination.page, pagination.limit, deviceTypeFilter, hardwareFilter, modelFilter, search]);
 
   const totalPages = pagination.getTotalPages();
-
-  const filteredDevices = devices.filter(
-    (d) =>
-      d.deviceName?.toLowerCase().includes(search.toLowerCase()) ||
-      d.deviceId?.toLowerCase().includes(search.toLowerCase())
-  );
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-md dark:border-white/[0.05] dark:bg-gray-900">
@@ -100,7 +95,10 @@ export default function DeviceTable() {
           <select
             className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm"
             value={deviceTypeFilter || ""}
-            onChange={(e) => setDeviceTypeFilter(e.target.value || undefined)}
+            onChange={(e) => {
+              setPagination(new Pagination(1, pagination.limit, pagination.total));
+              setDeviceTypeFilter(e.target.value || undefined)
+            }} 
           >
             <option value="">All Types</option>
             {Object.values(DeviceType).map((type) => (
@@ -114,7 +112,10 @@ export default function DeviceTable() {
           <select
             className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm"
             value={hardwareFilter || ""}
-            onChange={(e) => setHardwareFilter(e.target.value || undefined)}
+            onChange={(e) => {
+              setPagination(new Pagination(1, pagination.limit, pagination.total));
+              setHardwareFilter(e.target.value || undefined)
+            }} 
           >
             <option value="">All Hardware</option>
             {Object.values(HardwareType).map((type) => (
@@ -128,7 +129,10 @@ export default function DeviceTable() {
           <select
             className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm"
             value={modelFilter || ""}
-            onChange={(e) => setModelFilter(e.target.value || undefined)}
+            onChange={(e) => {
+              setPagination(new Pagination(1, pagination.limit, pagination.total));
+              setModelFilter(e.target.value || undefined)
+            }}
           >
             <option value="">All Models</option>
             {Object.values(ModelType).map((type) => (
@@ -146,7 +150,10 @@ export default function DeviceTable() {
             placeholder="Search by name or ID..."
             className="w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 rounded-md text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setPagination(new Pagination(1, pagination.limit, pagination.total));
+              setSearch(e.target.value);
+            }}
           />
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -179,8 +186,8 @@ export default function DeviceTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredDevices.length > 0 ? (
-              filteredDevices.map((d) => (
+            {devices.length > 0 ? (
+              devices.map((d) => (
                 <TableRow
                   key={d.deviceId}
                   className="hover:bg-blue-50 dark:hover:bg-gray-800 transition"

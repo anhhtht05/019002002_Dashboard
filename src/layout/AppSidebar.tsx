@@ -6,7 +6,7 @@ import {
   ChevronDownIcon,
   HorizontaLDots,
   TableIcon,
-  UserCircleIcon,
+  // UserCircleIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 
@@ -18,13 +18,13 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
+  // {
+  //   icon: <UserCircleIcon />,
+  //   name: "User Profile",
+  //   path: "/profile",
+  // },
   {
-    icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/profile",
-  },
-  {
-    name: "Tables",
+    name: "Management",
     icon: <TableIcon />,
     subItems: [{ name: "User", path: "/user-tables", pro: false }, { name: "Device", path: "/device-tables", pro: false }, { name: "Firmware", path: "/firmware-tables", pro: false }],
   }
@@ -235,7 +235,7 @@ const AppSidebar: React.FC = () => {
             <>
               <img
                 className="dark:hidden"
-                src="/images/logo/logo.svg"
+                src="/images/logo/logo.png"
                 alt="Logo"
                 width={150}
                 height={40}

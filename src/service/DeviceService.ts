@@ -1,7 +1,7 @@
 import axiosClient from "./AxiosClient";
 import { DeviceResponse } from "../model";
 import { RegisterDeviceRequest } from "../model";
-import { UpdateDeviceRequest } from "../Model/UpdateDeviceRequest";
+import { UpdateDeviceRequest } from "../model/UpdateDeviceRequest";
 
 const deviceService = {
     getDevices: async (
@@ -9,12 +9,14 @@ const deviceService = {
         limit: number,
         device_type?: string,
         hardware?: string, 
-        model?:string
+        model?:string,
+        search?:string
       ) => {
         const params: any = { page, limit };
         if (device_type) params.device_type = device_type;
         if (hardware) params.hardware = hardware;
         if (model) params.model = model;
+        if (search) params.search = search;
 
         const res = await axiosClient.get<DeviceResponse>("/api/v1/device", { params });
         return res.data;

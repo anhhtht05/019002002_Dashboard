@@ -1,16 +1,15 @@
 import axiosClient from "./AxiosClient";
 import { FirmwareResponse } from "../model";
-import { UploadFirmwareRequest } from "../model/UploadFirmwareRequest";
-import { UpdateFirmwareRequest } from "../Model/UpdateFirmwareRequest";
+import { UploadFirmwareRequest, UpdateFirmwareRequest } from "../model";
 
 const firmwareService = {
   getFirmwares: async (page: number, limit: number, status?: string,
-    model_compat?: string, 
-    hardware_compat?:string) => {
+    model_compat?: string, hardware_compat?:string, search?:string) => {
       const params: any = { page, limit };
     if (model_compat) params.model_compat = model_compat;
     if (hardware_compat) params.hardware_compat = hardware_compat;
     if (status) params.status = status;
+    if (search) params.search = search;
     const res = await axiosClient.get<FirmwareResponse>("/api/v1/firmware", { params });
     return res.data;
   },

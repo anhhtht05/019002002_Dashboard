@@ -1,5 +1,5 @@
 import axiosClient from "./AxiosClient";
-import { UserResponse } from "../Model/UserResponse";
+import { UserResponse } from "../model/UserResponse";
 import { UpdateUserRequest } from "../model";
 
 const userService = {
@@ -7,12 +7,14 @@ const userService = {
     page: number,
     limit: number,
     state?: string,
-    role?: string
+    role?: string,
+    search?:string
   ) => {
     const params: any = { page, limit };
 
     if (state) params.state = state;
     if (role) params.role = role;
+    if (search) params.search = search;
 
     const res = await axiosClient.get<UserResponse>("/api/admin/users", { params });
 

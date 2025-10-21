@@ -18,14 +18,17 @@ export default function UserTable() {
   const [search, setSearch] = useState("");
   const [stateFilter, setStateFilter] = useState<string | undefined>();
   const [roleFilter, setRoleFilter] = useState<string | undefined>();
+  const [loading, setLoading] = useState(false);
 
   const loadData = async () => {
+    setLoading(true);
     try {
       const res = await UserService.getUsers(
         pagination.page,
         pagination.limit,
         stateFilter,
-        roleFilter
+        roleFilter,
+        search
       );
       setUsers(res.data);
       setPagination(
@@ -37,12 +40,14 @@ export default function UserTable() {
       );
     } catch (err) {
       console.error("Failed to fetch users:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     loadData();
-  }, [pagination.page, pagination.limit, stateFilter, roleFilter]);
+  }, [pagination.page, pagination.limit, stateFilter, roleFilter, search]);
 
   const handlePageChange = (newPage: number) => {
     setPagination(new Pagination(newPage, pagination.limit, pagination.total));
@@ -51,7 +56,7 @@ export default function UserTable() {
   const handleLimitChange = (newLimit: number) => {
     setPagination(new Pagination(1, newLimit, pagination.total));
   };
-  
+
   const getRoleColor = (roleValue: string) => {
     switch (roleValue) {
       case RoleType.SUPERADMIN.value:
@@ -64,29 +69,23 @@ export default function UserTable() {
         return "bg-gray-100 text-gray-700";
     }
   };
-  
-  const handleUserUpdate = async (userId: string, updatedFields: Partial<UpdateUserRequest>) => {
+
+  const handleUserUpdate = async (
+    userId: string,
+    updatedFields: Partial<UpdateUserRequest>
+  ) => {
     try {
-      console.log(updatedFields);
       await UserService.updateUserState(userId, updatedFields);
       setUsers((prev) =>
-        prev.map((u) =>
-          u.id === userId ? { ...u, ...updatedFields } : u
-        )
+        prev.map((u) => (u.id === userId ? { ...u, ...updatedFields } : u))
       );
     } catch (err) {
       console.error("Update user failed:", err);
       alert("Failed to update user");
     }
   };
-  
-  const totalPages = pagination.getTotalPages();
 
-  const filteredUsers = users.filter(
-    (u) =>
-      u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase())
-  );
+  const totalPages = pagination.getTotalPages();
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03] p-4">
@@ -115,7 +114,10 @@ export default function UserTable() {
           <select
             className="border p-2 rounded text-sm"
             value={stateFilter || ""}
-            onChange={(e) => setStateFilter(e.target.value || undefined)}
+            onChange={(e) => {
+              setPagination(new Pagination(1, pagination.limit, pagination.total));
+              setStateFilter(e.target.value || undefined);
+            }}
           >
             <option value="">All States</option>
             {Object.values(UserStateType).map((type) => (
@@ -129,13 +131,16 @@ export default function UserTable() {
           <select
             className="border p-2 rounded text-sm"
             value={roleFilter || ""}
-            onChange={(e) => setRoleFilter(e.target.value || undefined)}
+            onChange={(e) =>{
+              setPagination(new Pagination(1, pagination.limit, pagination.total));
+              setRoleFilter(e.target.value || undefined);
+            }}
           >
-             <option value="">All Roles</option>
-              {Object.values(RoleType).map((role) => (
-                <option key={role.value} value={role.value}>
-                  {role.label}
-            </option>
+            <option value="">All Roles</option>
+            {Object.values(RoleType).map((role) => (
+              <option key={role.value} value={role.value}>
+                {role.label}
+              </option>
             ))}
           </select>
         </div>
@@ -147,7 +152,10 @@ export default function UserTable() {
             placeholder="Search by name or email..."
             className="w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 rounded-md text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setPagination(new Pagination(1, pagination.limit, pagination.total));
+              setSearch(e.target.value);
+            }}
           />
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -156,7 +164,12 @@ export default function UserTable() {
             viewBox="0 0 24 24"
             stroke="currentColor"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z"
+            />
           </svg>
         </div>
       </div>
@@ -182,8 +195,17 @@ export default function UserTable() {
           </TableHeader>
 
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
+            {loading ? (
+              <TableRow>
+                <td
+                  colSpan={4}
+                  className="text-center py-4 text-gray-500"
+                >
+                  Loading...
+                </td>
+              </TableRow>
+            ) : users.length > 0 ? (
+              users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell className="px-5 py-4 text-start">
                     {user.name}
@@ -199,8 +221,11 @@ export default function UserTable() {
                           : "bg-red-100 text-red-700"
                       }`}
                       value={user.state}
-                      onChange={ (e) =>
-                        handleUserUpdate(user.id.toString(), { state: e.target.value })}
+                      onChange={(e) =>
+                        handleUserUpdate(user.id.toString(), {
+                          state: e.target.value,
+                        })
+                      }
                     >
                       <option value="ACTIVE">ACTIVE</option>
                       <option value="INACTIVE">INACTIVE</option>
@@ -208,9 +233,13 @@ export default function UserTable() {
                   </TableCell>
                   <TableCell>
                     <select
-                      className={`px-2 py-1 rounded text-sm font-medium border-0 cursor-pointer ${getRoleColor(user.role)}`}
+                      className={`px-2 py-1 rounded text-sm font-medium border-0 cursor-pointer ${getRoleColor(
+                        user.role
+                      )}`}
                       value={user.role}
-                      onChange={(e) => handleUserUpdate(user.id, { role: e.target.value })}
+                      onChange={(e) =>
+                        handleUserUpdate(user.id, { role: e.target.value })
+                      }
                     >
                       {Object.values(RoleType).map((r) => (
                         <option key={r.value} value={r.value}>
@@ -238,8 +267,7 @@ export default function UserTable() {
       {/* Pagination */}
       <div className="mt-4 flex justify-between items-center">
         <span className="text-sm text-gray-600">
-          Page {pagination.page} of {totalPages} | Total {pagination.total}{" "}
-          users
+          Page {pagination.page} of {totalPages} | Total {pagination.total} users
         </span>
         <div className="flex space-x-2">
           <button

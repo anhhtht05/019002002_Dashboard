@@ -33,13 +33,13 @@ const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose }) =>
     setLoading(true);
     try {
       const res = await deviceService.registerDevice(formData);
-      alert("Device registered successfully!");
+      alert("Add device successfully!");
       console.log("Response:", res);
       onClose();
     } catch (err: any) {
-      console.error("Register failed:", err);
+      console.error("Add device failed:", err);
       if (err.response) {
-        alert(`Register failed: ${err.response.data.error?.message || "Server error"}`);
+        alert(`Add device failed: ${err.response.data.error?.message || "Server error"}`);
       } else {
         alert(`Network error: ${err.message}`);
       }
@@ -62,7 +62,7 @@ const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose }) =>
 
         {/* Title */}
         <h2 className="text-3xl font-semibold text-gray-800 dark:text-gray-100 text-center mb-8">
-          Register New Device
+          Add New Device
         </h2>
 
         {/* Form */}
@@ -165,7 +165,7 @@ const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose }) =>
             disabled={loading}
             className="mt-8 w-full rounded-lg bg-blue-600 text-white py-3.5 font-medium text-lg hover:bg-blue-700 active:scale-[0.98] disabled:bg-gray-400 transition-all duration-200 shadow-md"
           >
-            {loading ? "Registering..." : "Register Device"}
+            {loading ? "Add device..." : "Add device"}
           </button>
         </form>
       </div>

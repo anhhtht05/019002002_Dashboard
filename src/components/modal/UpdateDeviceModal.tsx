@@ -5,7 +5,7 @@ import Label from "../form/Label.tsx";
 import Input from "../form/input/InputField.tsx";
 import Select from "../form/Select.tsx";
 import { DeviceType, ModelType, HardwareType } from "../../enums";
-import { UpdateDeviceRequest } from "../../Model/UpdateDeviceRequest.ts";
+import { UpdateDeviceRequest } from "../../model/UpdateDeviceRequest.ts";
 
 interface UpdateDeviceModalProps {
   device: UpdateDeviceRequest;

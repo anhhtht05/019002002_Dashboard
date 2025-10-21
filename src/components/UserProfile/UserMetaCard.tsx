@@ -1,21 +1,28 @@
-// import { useModal } from "../../hooks/useModal";
-// import { Modal } from "../ui/modal";
-// import Button from "../ui/button/Button";
-// import Input from "../form/input/InputField";
-// import Label from "../form/Label";
+import { useModal } from "../../hooks/useModal";
+import { Modal } from "../ui/modal";
+import Button from "../ui/button/Button";
+import Input from "../form/input/InputField";
+import Label from "../form/Label";
 import { useEffect, useState } from "react";
 import { authService } from "../../service/AuthService";
 import { GetUserResponse } from "../../model";
 import { RoleType } from "../../enums";
+import { EyeIcon, EyeCloseIcon } from "../../icons";
 
 export default function UserMetaCard() {
-  // const { isOpen, openModal, closeModal } = useModal();
-  // const handleSave = () => {
-  //   // Handle save logic here
-  //   console.log("Saving changes...");
-  //   closeModal();
-  // };
+  const { isOpen, openModal, closeModal } = useModal();
   const [user, setUser] = useState<GetUserResponse | null>(null);
+
+  // form states
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -28,40 +35,72 @@ export default function UserMetaCard() {
     };
     fetchUser();
   }, []);
+
   const getRoleLabel = (roleValue?: string) => {
     if (!roleValue) return "Admin";
     const roleEntry = Object.values(RoleType).find(r => r.value === roleValue);
     return roleEntry?.label || "Admin";
   };
 
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setMessage(null);
+
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      setError("Please fill in all fields.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError("New passwords do not match.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await authService.updatePassword(oldPassword, newPassword);
+      setMessage("Password updated successfully!");
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+
+      // auto close after 1.5s
+      setTimeout(() => {
+        closeModal();
+        setMessage(null);
+      }, 1500);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to update password.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
+      {/* --- User Card --- */}
       <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-col items-center w-full gap-6 xl:flex-row">
             <div className="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800">
               <img src="/images/user/user.png" alt="user" />
             </div>
-            <div className="order-3 xl:order-2">
-              <h4 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
-              {user?.name}
+            <div>
+              <h4 className="mb-1 text-lg font-semibold text-gray-800 dark:text-white/90">
+                {user?.name}
               </h4>
-              <div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 {getRoleLabel(user?.role)}
-                </p>
-                {/* <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div> */}
-                {/* <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Arizona, United States
-                </p> */}
-              </div>
+              </p>
             </div>
           </div>
-          {/* <button
+
+          {/* --- Button Change Password --- */}
+          <button
             onClick={openModal}
-            className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
           >
-            <svg
+                        <svg
               className="fill-current"
               width="18"
               height="18"
@@ -76,57 +115,124 @@ export default function UserMetaCard() {
                 fill=""
               />
             </svg>
-            Edit
-          </button> */}
+            Change Password
+          </button>
         </div>
       </div>
-      {/* <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
-        <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
-          <div className="px-2 pr-14">
-            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-              Edit Personal Information
-            </h4>
-            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-              Update your details to keep your profile up-to-date.
-            </p>
-          </div>
-          <form className="flex flex-col">
-            <div className="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
-              
-              <div className="mt-7">
-                <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
-                  Personal Information
-                </h5>
 
-                <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                  <div className="col-span-2 lg:col-span-1">
-                    <Label>Name</Label>
-                    <Input type="text" value="Musharof" />
-                  </div>
+      {/* --- Modal Change Password --- */}
+      <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[500px] m-4">
+        <div className="relative w-full max-w-[500px] rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-8">
+          <h4 className="mb-2 text-xl font-semibold text-gray-800 dark:text-white">
+            Change Password
+          </h4>
+          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+            Please enter your current password and new password below.
+          </p>
 
-                  <div className="col-span-2 lg:col-span-1">
-                    <Label>Last Name</Label>
-                    <Input type="text" value="Chowdhury" />
-                  </div>
-
-                  <div className="col-span-2 lg:col-span-1">
-                    <Label>Email Address</Label>
-                    <Input type="text" value="randomuser@pimjo.com" />
-                  </div>
-                </div>
+          <form onSubmit={handleSave} className="flex flex-col gap-5">
+            {/* Old password */}
+            <div>
+              <Label>Current Password</Label>
+              <div className="relative">
+                <Input
+                  type={showOld ? "text" : "password"}
+                  value={oldPassword}
+                  onChange={e => setOldPassword(e.target.value)}
+                  placeholder="Enter current password"
+                />
+                <span
+                  onClick={() => setShowOld(!showOld)}
+                  className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
+                >
+                  {showOld ? (
+                    <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                  ) : (
+                    <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                  )}
+                </span>
               </div>
             </div>
-            <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-              <Button size="sm" variant="outline" onClick={closeModal}>
-                Close
+
+            {/* New password */}
+            <div>
+              <Label>New Password</Label>
+              <div className="relative">
+                <Input
+                  type={showNew ? "text" : "password"}
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  placeholder="Enter new password"
+                />
+                <span
+                  onClick={() => setShowNew(!showNew)}
+                  className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
+                >
+                  {showNew ? (
+                    <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                  ) : (
+                    <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                  )}
+                </span>
+              </div>
+            </div>
+
+            {/* Confirm password */}
+            <div>
+              <Label>Confirm New Password</Label>
+              <div className="relative">
+                <Input
+                  type={showConfirm ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter new password"
+                />
+                <span
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
+                >
+                  {showConfirm ? (
+                    <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                  ) : (
+                    <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                  )}
+                </span>
+              </div>
+            </div>
+
+            {error && (
+              <p className="text-sm text-red-500 dark:text-red-400">{error}</p>
+            )}
+            {message && (
+              <p className="text-sm text-green-600 dark:text-green-400">
+                {message}
+              </p>
+            )}
+
+            <div className="flex justify-end gap-3 mt-4">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={closeModal}
+                type="button"
+                className="w-24"
+              >
+                Cancel
               </Button>
-              <Button size="sm" onClick={handleSave}>
-                Save Changes
+              <Button
+                size="sm"
+                type="submit"
+                disabled={loading}
+                className={`w-32 bg-blue-600 text-white hover:bg-blue-700 ${
+                  loading ? "opacity-70 cursor-not-allowed" : ""
+                }`}
+              >
+                {loading ? "Saving..." : "Save Changes"}
               </Button>
             </div>
           </form>
         </div>
-      </Modal> */}
+      </Modal>
     </>
   );
 }
