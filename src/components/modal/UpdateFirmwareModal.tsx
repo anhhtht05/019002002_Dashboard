@@ -99,19 +99,6 @@ export default function UpdateFirmwareModal({ firmware, onClose }: Props) {
             </div>
           </div>
 
-          {/* Status */}
-          <div className="w-full mt-4">
-            <Label>Status</Label>
-            <select
-              value={form.status}
-              onChange={(e) => handleChange("status", e.target.value)}
-              className="w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            >
-              <option value="DRAFT">DRAFT</option>
-              <option value="RELEASED">RELEASED</option>
-            </select>
-          </div>
-
           {/* Submit */}
           <button
             type="submit"

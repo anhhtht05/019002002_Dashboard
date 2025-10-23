@@ -8,8 +8,9 @@ import {
 } from "../../ui/table";
 import { User, Pagination, UpdateUserRequest } from "../../../model";
 import UserService from "../../../service/UserService";
-import { UserStateType, RoleType } from "../../../enums";
+import { UserStateType, RoleType, StatusType } from "../../../enums";
 import Loading from "../../../loading/Loading";
+import SelectType from "../../ui/select/SelectType";
 
 export default function UserTable() {
   const [users, setUsers] = useState<User[]>([]);
@@ -20,6 +21,14 @@ export default function UserTable() {
   const [stateFilter, setStateFilter] = useState<string | undefined>();
   const [roleFilter, setRoleFilter] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
+
+  const statusColors: Record<string, string> = {
+    ROLE_OPERATOR: "bg-yellow-100 text-yellow-800",
+    ROLE_ADMIN: "bg-green-100 text-green-800",
+    ROLE_SUPER_ADMIN: "bg-red-100 text-red-800",
+    ACTIVE: "bg-green-200 text-green-900",
+    INACTIVE: "bg-gray-300 text-gray-900",
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -58,36 +67,40 @@ export default function UserTable() {
     setPagination(new Pagination(1, newLimit, pagination.total));
   };
 
-  const getRoleColor = (roleValue: string) => {
-    switch (roleValue) {
-      case RoleType.SUPERADMIN.value:
-        return "bg-red-100 text-red-700";
-      case RoleType.ADMIN.value:
-        return "bg-blue-100 text-blue-700";
-      case RoleType.OPERATOR.value:
-        return "bg-green-100 text-green-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
-
   const handleUserUpdate = async (
     userId: string,
     updatedFields: Partial<UpdateUserRequest>
   ) => {
     setLoading(true);
     try {
-      await UserService.updateUserState(userId, updatedFields);
+      const currentUser = users.find((u) => u.id.toString() === userId);
+      if (!currentUser) {
+        console.error("User not found for update:", userId);
+        setLoading(false);
+        return;
+      }
+  
+      const fullUpdateData: UpdateUserRequest = {
+        name: currentUser.name,
+        email: currentUser.email,
+        role: currentUser.role,
+        state: currentUser.state,
+        ...updatedFields, 
+      };
+  
+      await UserService.updateUserState(userId, fullUpdateData);
+  
       setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, ...updatedFields } : u))
+        prev.map((u) => (u.id.toString() === userId ? { ...u, ...fullUpdateData } : u))
       );
     } catch (err) {
       console.error("Update user failed:", err);
       alert("Failed to update user");
-    }  finally {
+    } finally {
       setLoading(false);
     }
   };
+  
 
   const totalPages = pagination.getTotalPages();
 
@@ -211,40 +224,29 @@ export default function UserTable() {
                     {user.email}
                   </TableCell>
                   <TableCell className="px-5 py-4 text-start">
-                    <select
-                      className={`px-2 py-1 rounded text-sm font-medium border-0 cursor-pointer ${
-                        user.state === "ACTIVE"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
-                      value={user.state}
-                      onChange={(e) =>
-                        handleUserUpdate(user.id.toString(), {
-                          state: e.target.value,
-                        })
-                      }
-                    >
-                      <option value="ACTIVE">ACTIVE</option>
-                      <option value="INACTIVE">INACTIVE</option>
-                    </select>
-                  </TableCell>
-                  <TableCell>
-                    <select
-                      className={`px-2 py-1 rounded text-sm font-medium border-0 cursor-pointer ${getRoleColor(
-                        user.role
-                      )}`}
-                      value={user.role}
-                      onChange={(e) =>
-                        handleUserUpdate(user.id, { role: e.target.value })
-                      }
-                    >
-                      {Object.values(RoleType).map((r) => (
-                        <option key={r.value} value={r.value}>
-                          {r.label}
-                        </option>
-                      ))}
-                    </select>
-                  </TableCell>
+                  <SelectType
+                    value={user.state}
+                    options={Object.values(StatusType).map((s) => ({
+                      label: s, 
+                      value: s, 
+                    }))}
+                    colorMap={statusColors}
+                    onChange={(val) =>
+                      handleUserUpdate(user.id.toString(), { state: val })
+                    }
+                  />
+                </TableCell>
+                <TableCell>
+                  <SelectType
+                    value={user.role}
+                    options={Object.values(RoleType).map((r) => ({
+                      label: r.label,
+                      value: r.value,
+                    }))}
+                    colorMap={statusColors}
+                    onChange={(val) => handleUserUpdate(user.id.toString(), { role: val })}
+                  />
+                </TableCell>
                 </TableRow>
               ))
             ) : (

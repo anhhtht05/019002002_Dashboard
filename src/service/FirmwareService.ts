@@ -2,6 +2,7 @@ import axiosClient from "./AxiosClient";
 import { FirmwareResponse } from "../model";
 import { UpdateFirmwareRequest } from "../model";
 import { UploadFirmwareRequest } from "../model/UploadFirmwareRequest";
+import { StatusFirmwareType } from "../enums/StatusFimwareType";
 
 const firmwareService = {
   getFirmwares: async (page: number, limit: number, status?: string,
@@ -33,6 +34,24 @@ const firmwareService = {
       console.error("Error upload firmware:", error);
       throw error;
     }
-  }
+  },
+  deleteFirmware: async (id: string) => {
+    try {
+      const res = await axiosClient.delete(`/api/v1/firmware/delete/${id}`);
+      return res.data;
+    } catch (error) {
+      console.error("Error delete firmware:", error);
+      throw error;
+    }
+  },
+  updateStatusFirmware: async (id: string, status: string) => {
+    try {
+      const res = await axiosClient.put(`/api/v1/firmware/update-status/${id}?status=${status}`);
+      return res.data;
+    } catch (error) {
+      console.error("Error deprecate firmware:", error);
+      throw error;
+    }
+  },
 };
 export default firmwareService;

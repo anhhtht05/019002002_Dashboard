@@ -35,10 +35,19 @@ const deviceService = {
       const res = await axiosClient.put("/api/v1/device/update", data);
       return res.data;
     } catch (error) {
-      console.error("Error Updating device:", error);
+      console.error("Error updating device:", error);
       throw error;
     }
   },
+    deleteDevice: async (deviceId: string) => {
+      try {
+        const res = await axiosClient.delete(`/api/v1/device/${deviceId}`);
+        return res.data;
+      } catch (error) {
+        console.error("Error deleting device:", error);
+        throw error;
+      }
+    }
 };
 
 export default deviceService;

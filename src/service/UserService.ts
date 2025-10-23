@@ -1,6 +1,6 @@
 import axiosClient from "./AxiosClient";
 import { UserResponse } from "../model/UserResponse";
-import { UpdateUserRequest } from "../model";
+import { AddUserRequest, UpdateUserRequest } from "../model";
 
 const userService = {
   getUsers: async (
@@ -23,7 +23,13 @@ const userService = {
   updateUserState: async (id: string, data: UpdateUserRequest) => {
     const res = await axiosClient.put<UserResponse>(`/api/admin/users/${id}`, data);
     return res.data;
-  }
+  },
+  addUser: async (data: AddUserRequest) => {
+      const res = await axiosClient.post("/api/admin/users/add", data);
+      // console.log("Register response:", res);
+      // console.log(res.data?.access_token);
+      return res;
+    },
 };
 
 

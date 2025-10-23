@@ -1,14 +1,7 @@
 import { apiService } from "./ApiService";
-import { AuthResponse, RegisterRequest, GetUserResponse } from "../model";
+import { AuthResponse, GetUserResponse } from "../model";
 
 export const authService = {
-
-  register: async (data: RegisterRequest) => {
-    const res = await apiService.post("/api/auth/register", data);
-    // console.log("Register response:", res);
-    // console.log(res.data?.access_token);
-    return res;
-  },
 
   login: async (email: string, password: string): Promise<AuthResponse> => {
     const res = await apiService.post<AuthResponse>("/api/auth/login", { email, password });

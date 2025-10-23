@@ -1,7 +1,7 @@
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import ComponentCard from "../../components/common/ComponentCard";
-import DeviceTable from "../../components/tables/BasicTables/DeviceTable";
 import RegisterDeviceModal from "../../components/modal/RegisterDeviceModal";
+import DeviceTable from "../../components/tables/BasicTables/DeviceTable";
 
 export default function DeviceTables() {
   return (

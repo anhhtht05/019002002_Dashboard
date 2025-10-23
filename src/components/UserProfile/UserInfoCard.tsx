@@ -16,7 +16,6 @@ export default function UserInfoCard() {
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     const fetchUser = async () => {
-      setLoading(true);
       try {
         const data = await authService.me();
         setUser(data);
@@ -26,8 +25,6 @@ export default function UserInfoCard() {
         });
       } catch (error) {
         console.error("Failed to fetch user:", error);
-      } finally {
-        setLoading(false);
       }
     };
     fetchUser();

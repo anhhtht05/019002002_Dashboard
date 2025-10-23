@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 import SignIn from "./pages/AuthPages/SignIn";
-import SignUp from "./pages/AuthPages/SignUp";
+// import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
 import UserProfiles from "./pages/UserProfiles";
 import Videos from "./pages/UiElements/Videos";
@@ -15,11 +15,13 @@ import Calendar from "./pages/Calendar";
 import UserTables from "./pages/Tables/UserTables";
 import FirmwareTables from "./pages/Tables/FirmwareTables";
 import DeviceTables from "./pages/Tables/DeviceTables";
-import FormElements from "./pages/Forms/FormElements";
-import Blank from "./pages/Blank";
+// import FormElements from "./pages/Forms/FormElements";
+// import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
+import PrivateRoute from "./components/auth/PrivateRoute";
+import FirmwareDownloadHistoryTables from "./pages/Tables/FirmwareDownloadHistoryTables";
 
 export default function App() {
   return (
@@ -27,6 +29,7 @@ export default function App() {
       <Router>
         <ScrollToTop />
         <Routes>
+        <Route element={<PrivateRoute />}>
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
             <Route index path="/" element={<Home />} />
@@ -40,23 +43,24 @@ export default function App() {
             {/* <Route path="/form-elements" element={<FormElements />} /> */}
 
             {/* Tables */}
-            <Route path="/user-tables" element={<UserTables />} />
-            <Route path="/device-tables" element={<DeviceTables />} />
-            <Route path="/firmware-tables" element={<FirmwareTables />} />
+            <Route path="/user" element={<UserTables />} />
+            <Route path="/device" element={<DeviceTables />} />
+            <Route path="/firmware" element={<FirmwareTables />} />
+            {/* <Route path="/firmware-download-history" element={<FirmwareDownloadHistoryTables />} /> */}
             
             {/* Ui Elements */}
-            {/* <Route path="/alerts" element={<Alerts />} />
+            <Route path="/alerts" element={<Alerts />} />
             <Route path="/avatars" element={<Avatars />} />
             <Route path="/badge" element={<Badges />} />
             <Route path="/buttons" element={<Buttons />} />
             <Route path="/images" element={<Images />} />
-            <Route path="/videos" element={<Videos />} /> */}
+            <Route path="/videos" element={<Videos />} />
 
             {/* Charts */}
             {/* <Route path="/line-chart" element={<LineChart />} />
             <Route path="/bar-chart" element={<BarChart />} /> */}
           </Route>
-
+          </Route>
           {/* Auth Layout */}
           <Route path="/signin" element={<SignIn />} />
           {/* <Route path="/signup" element={<SignUp />} /> */}
