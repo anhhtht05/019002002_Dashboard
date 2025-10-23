@@ -10,9 +10,10 @@ import Loading from "../../loading/Loading.tsx";
 interface Props {
   firmware: any;
   onClose: () => void;
+  onSuccess?: (message: { type: "success" | "error"| "warning" | "info"; title: string; message: string }) => void;
 }
 
-export default function UpdateFirmwareModal({ firmware, onClose }: Props) {
+export default function UpdateFirmwareModal({ firmware, onClose, onSuccess }: Props) {
   const [form, setForm] = useState<UpdateFirmwareRequest>({
     description: firmware.description || "",
     modelCompat: firmware.modelCompat || [],
@@ -30,10 +31,18 @@ export default function UpdateFirmwareModal({ firmware, onClose }: Props) {
     setLoading(true);
     try {
       await firmwareService.updateFirmware(firmware.id, form);
+      onSuccess?.({
+        type: "success",
+        title: "Device updated",
+        message: "Device updated successfully.",
+      }); 
       onClose();
-    } catch (err) {
-      console.error("Update failed:", err);
-      // alert("Failed to update firmware");
+    } catch (err: any) {
+      onSuccess?.({
+        type: "error",
+        title: "Update failed",
+        message: `Upload failed: ${err.response.data.error?.message}` || "Failed to update firmware. Please try again.",
+      });
     } finally {
       setLoading(false);
     }

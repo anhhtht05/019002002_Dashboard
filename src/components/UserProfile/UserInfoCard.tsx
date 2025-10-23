@@ -38,7 +38,7 @@ export default function UserInfoCard() {
     if (!user?.id) return;
     setLoading(true);
     try {
-      await userService.updateUserState(user.id, form);
+      await userService.updateUser(user.id, form as UpdateUserRequest);
       setUser((prev) => (prev ? { ...prev, ...form } : prev));
       closeModal();
     } catch (error) {

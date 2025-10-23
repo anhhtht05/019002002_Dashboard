@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link } from "react-router";
 
 interface AlertProps {
@@ -7,6 +8,8 @@ interface AlertProps {
   showLink?: boolean; // Whether to show the "Learn More" link
   linkHref?: string; // Link URL
   linkText?: string; // Link text
+  duration?: number;
+  onClose?: () => void;
 }
 
 const Alert: React.FC<AlertProps> = ({
@@ -16,7 +19,15 @@ const Alert: React.FC<AlertProps> = ({
   showLink = false,
   linkHref = "#",
   linkText = "Learn more",
+  duration = 3000,
+  onClose,
 }) => {
+  useEffect(() => {
+    if (duration && onClose) {
+      const timer = setTimeout(() => onClose(), duration);
+      return () => clearTimeout(timer);
+    }
+  }, [duration, onClose]);
   // Tailwind classes for each variant
   const variantClasses = {
     success: {
@@ -113,7 +124,8 @@ const Alert: React.FC<AlertProps> = ({
 
   return (
     <div
-      className={`rounded-xl border p-4 ${variantClasses[variant].container}`}
+    className={`fixed top-4 right-4 z-[999999] rounded-xl border shadow-lg px-4 py-3 
+      max-w-sm animate-fade-in-up ${variantClasses[variant].container}`}
     >
       <div className="flex items-start gap-3">
         <div className={`-mt-0.5 ${variantClasses[variant].icon}`}>

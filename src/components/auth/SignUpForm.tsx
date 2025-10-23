@@ -24,13 +24,6 @@ export default function SignUpForm() {
     }
     try {
       const fullName = `${fname} ${lname}`;
-      const res = await authService.register({
-        name: fullName,
-        email,
-        password,
-      });
-      console.log("Registered user:", res.data);
-      console.log("Registered user:", res);
       alert("Sign up successful!");
       navigate("/signin");
     } catch (err) {

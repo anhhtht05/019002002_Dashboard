@@ -11,9 +11,10 @@ import Loading from "../../loading/Loading.tsx";
 interface UpdateDeviceModalProps {
   device: UpdateDeviceRequest;
   onClose: () => void;
+  onSuccess?: (message: { type: "success" | "error"| "warning" | "info"; title: string; message: string }) => void;
 }
 
-const UpdateDeviceModal: React.FC<UpdateDeviceModalProps> = ({ device, onClose }) => {
+const UpdateDeviceModal: React.FC<UpdateDeviceModalProps> = ({ device, onClose, onSuccess }) => {
   const [formData, setFormData] = useState<UpdateDeviceRequest>({
     deviceId: device.deviceId || "",
     deviceName: device.deviceName || "",
@@ -37,14 +38,26 @@ const UpdateDeviceModal: React.FC<UpdateDeviceModalProps> = ({ device, onClose }
     setLoading(true);
     try {
       await deviceService.updateDevice(formData);
-      // alert("Device updated successfully!");
+      onSuccess?.({
+        type: "success",
+        title: "Device updated",
+        message: `Device ${formData.deviceName} updated successfully.`,
+      });  
       onClose();
     } catch (err: any) {
       console.error("Update failed:", err);
       if (err.response) {
-        alert(`Update failed: ${err.response.data.error?.message || "Server error"}`);
+        onSuccess?.({
+          type: "error",
+          title: "Update failed",
+          message: err.response?.data?.error?.message || err.message,
+        });
       } else {
-        alert(`Network error: ${err.message}`);
+        onSuccess?.({
+          type: "error",
+          title: "Network error",
+          message: `Network error: ${err.message}`,
+        });
       }
     } finally {
       setLoading(false);

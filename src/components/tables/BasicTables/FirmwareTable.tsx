@@ -13,6 +13,7 @@ import UpdateFirmwareModal from "../../modal/UpdateFirmwareModal";
 import { StatusFirmwareType, getAllowedNextStatuses } from "../../../enums/StatusFimwareType";
 import Loading from "../../../loading/Loading";
 import SelectType from "../../ui/select/SelectType";
+import Alert from "../../ui/alert/Alert";
 
 export default function FirmwareTable() {
   const [firmwares, setFirmwares] = useState<any[]>([]);
@@ -24,7 +25,11 @@ export default function FirmwareTable() {
   const [selectedFirmware, setSelectedFirmware] = useState<any | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const [alert, setAlert] = useState<{
+    type: "success" | "error" | "warning" | "info";
+    title: string;
+    message: string;
+  } | null>(null);
   const statusColors: Record<string, string> = {
     DRAFT: "bg-yellow-100 text-yellow-800",
     RELEASED: "bg-green-100 text-green-800",
@@ -69,11 +74,19 @@ export default function FirmwareTable() {
    try {
       await firmwareService.deleteFirmware(fw.id);
   
-      // alert("Firmware status updated to DELETED successfully!");
+      setAlert({
+        type: "success",
+        title: "Deleted Successfully",
+        message: `Firmware "${fw.name}" has been deleted.`,
+      });  
       loadData();
     } catch (err: any) {
       console.error("Failed to update firmware status:", err);
-      alert(err.response?.data?.message || "Failed to update status");
+      setAlert({
+        type: "error",
+        title: "Delete Failed",
+        message: err.response?.data?.message || "Failed to delete firmware.",
+      });
     }  finally {
       setLoading(false);
     }
@@ -85,9 +98,17 @@ export default function FirmwareTable() {
       setLoading(true);
       await firmwareService.updateStatusFirmware(fw.id, val);
       await loadData();
-    } catch (err) {
-      console.error("Failed to update firmware status:", err);
-      alert(err || "Failed to update firmware status");
+      setAlert({
+        type: "success",
+        title: "Status Updated",
+        message: `Firmware "${fw.name}" marked as ${val}.`,
+      });
+    } catch (err: any) {
+      setAlert({
+        type: "error",
+        title: "Update Failed",
+        message: err.response?.data?.message || "Failed to update firmware status.",
+      });
     } finally {
       setLoading(false);
     }
@@ -99,6 +120,17 @@ export default function FirmwareTable() {
   return (
     <>
     {loading && <Loading />}
+    {alert && (
+      <div className="mb-4">
+        <Alert
+          variant={alert.type}
+          title={alert.title}
+          message={alert.message}
+          duration={3000}
+          onClose={() => setAlert(null)}
+        />
+      </div>
+    )}
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-md dark:border-white/[0.05] dark:bg-gray-900">
       {/* --- Filter Section --- */}
     <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -349,6 +381,10 @@ export default function FirmwareTable() {
             setShowModal(false);
             setSelectedFirmware(null);
             loadData();
+          }}
+          onSuccess={(msg) => {
+            setAlert(msg); 
+            loadData(); 
           }}
         />
       )}

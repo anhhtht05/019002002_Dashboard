@@ -9,9 +9,10 @@ import Loading from "../../loading/Loading.tsx";
 
 interface RegisterDeviceModalProps {
   onClose: () => void;
+  onSuccess?: (message: { type: "success" | "error"| "warning" | "info"; title: string; message: string }) => void;
 }
 
-const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose }) => {
+const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     deviceId: "",
     deviceName: "",
@@ -34,15 +35,25 @@ const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose }) =>
     setLoading(true);
     try {
       const res = await deviceService.registerDevice(formData);
-      // alert("Add device successfully!");
-      console.log("Response:", res);
+      onSuccess?.({
+        type: "success",
+        title: "Add Device",
+        message: `${res.message}`,
+      });
       onClose();
     } catch (err: any) {
-      console.error("Add device failed:", err);
       if (err.response) {
-        alert(`Add device failed: ${err.response.data.error?.message || "Server error"}`);
+        onSuccess?.({
+          type: "error",
+          title: "Failed add device",
+          message: `Add device failed: ${err.response.data.error?.message || "Server error"}`,
+        });
       } else {
-        alert(`Network error: ${err.message}`);
+        onSuccess?.({
+          type: "error",
+          title: "Failed add device",
+          message: `Network error: ${err.message}`,
+        });
       }
     } finally {
       setLoading(false);

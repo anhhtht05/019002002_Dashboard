@@ -1,11 +1,24 @@
 import React, { useState } from "react";
 
+interface ModalProps {
+  onClose: () => void;
+  onSuccess?: (alertData: {
+    type: "success" | "error" | "warning" | "info";
+    title: string;
+    message: string;
+  }) => void;
+}
 interface ComponentCardProps {
   title: string;
   children: React.ReactNode;
   className?: string;
-  modalComponent?: React.ComponentType<{ onClose: () => void }>;
+  modalComponent?: React.ComponentType<ModalProps>;
   actionLabel?: string;
+  onSuccess?: (alertData: {
+    type: "success" | "error" | "warning" | "info";
+    title: string;
+    message: string;
+  }) => void
 }
 
 const ComponentCard: React.FC<ComponentCardProps> = ({
@@ -13,6 +26,7 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
   children,
   modalComponent: ModalComponent,
   actionLabel = "",
+  onSuccess
 }) => {
   const [showModal, setShowModal] = useState(false);
 
@@ -55,7 +69,7 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
       </div>
 
       {/* Modal */}
-      {ModalComponent && showModal && <ModalComponent onClose={closeModal} />}
+      {ModalComponent && showModal && <ModalComponent onClose={closeModal} onSuccess={onSuccess} />}
     </>
   );
 };

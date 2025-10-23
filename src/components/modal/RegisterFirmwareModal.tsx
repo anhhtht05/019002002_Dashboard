@@ -11,9 +11,10 @@ import Loading from "../../loading/Loading";
 
 interface RegisterFirmwareModalProps {
   onClose: () => void;
+  onSuccess?: (message: { type: "success" | "error" | "warning" | "info"; title: string; message: string }) => void;
 }
 
-const RegisterFirmwareModal: React.FC<RegisterFirmwareModalProps> = ({ onClose }) => {
+const RegisterFirmwareModal: React.FC<RegisterFirmwareModalProps> = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState<UploadFirmwareRequest>({
     version: "",
     firmwareName: "",
@@ -39,7 +40,11 @@ const RegisterFirmwareModal: React.FC<RegisterFirmwareModalProps> = ({ onClose }
     e.preventDefault();
 
     if (!formData.file) {
-      alert("Please upload a firmware file!");
+      onSuccess?.({
+        type: "warning",
+        title: "Warning upload",
+        message: "Please upload a firmware file!",
+      });
       return;
     }
 
@@ -47,15 +52,26 @@ const RegisterFirmwareModal: React.FC<RegisterFirmwareModalProps> = ({ onClose }
     try {
       const res = await firmwareService.uploadFirmware(formData);
 
-      // alert("Firmware uploaded successfully!");
-      console.log("Response:", res);
+      onSuccess?.({
+        type: "success",
+        title: "Upload Successful",
+        message: `${res.message}`,
+      });
       onClose();
     } catch (err: any) {
       console.error("Upload failed:", err);
       if (err.response) {
-        alert(`Upload failed: ${err.response.data.error?.message || "Server error"}`);
+        onSuccess?.({
+          type: "error",
+          title: "Update failed",
+          message: `Upload failed: ${err.response.data.error?.message || "Server error"}`,
+        });        
       } else {
-        alert(`Network error: ${err.message}`);
+        onSuccess?.({
+          type: "error",
+          title: "Update failed",
+          message: `Network error: ${err.message}`,
+        });
       }
     } finally {
       setLoading(false);

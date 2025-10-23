@@ -11,6 +11,7 @@ import UserService from "../../../service/UserService";
 import { UserStateType, RoleType, StatusType } from "../../../enums";
 import Loading from "../../../loading/Loading";
 import SelectType from "../../ui/select/SelectType";
+import Alert from "../../ui/alert/Alert";
 
 export default function UserTable() {
   const [users, setUsers] = useState<User[]>([]);
@@ -21,6 +22,11 @@ export default function UserTable() {
   const [stateFilter, setStateFilter] = useState<string | undefined>();
   const [roleFilter, setRoleFilter] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState<{
+    type: "success" | "error" | "warning" | "info";
+    title: string;
+    message: string;
+  } | null>(null);
 
   const statusColors: Record<string, string> = {
     ROLE_OPERATOR: "bg-yellow-100 text-yellow-800",
@@ -67,39 +73,51 @@ export default function UserTable() {
     setPagination(new Pagination(1, newLimit, pagination.total));
   };
 
-  const handleUserUpdate = async (
-    userId: string,
-    updatedFields: Partial<UpdateUserRequest>
-  ) => {
+  const handleUpdateState = async (userId: string, newState: string) => {
     setLoading(true);
     try {
-      const currentUser = users.find((u) => u.id.toString() === userId);
-      if (!currentUser) {
-        console.error("User not found for update:", userId);
-        setLoading(false);
-        return;
-      }
-  
-      const fullUpdateData: UpdateUserRequest = {
-        name: currentUser.name,
-        email: currentUser.email,
-        role: currentUser.role,
-        state: currentUser.state,
-        ...updatedFields, 
-      };
-  
-      await UserService.updateUserState(userId, fullUpdateData);
-  
+      await UserService.updateUserState(userId, newState);
       setUsers((prev) =>
-        prev.map((u) => (u.id.toString() === userId ? { ...u, ...fullUpdateData } : u))
+        prev.map((u) => (u.id.toString() === userId ? { ...u, state: newState } : u))
       );
-    } catch (err) {
-      console.error("Update user failed:", err);
-      alert("Failed to update user");
+      setAlert({
+        type: "success",
+        title: "State Updated",
+        message: `User state updated to "${newState}".`,
+      });
+    } catch (err: any) {
+      setAlert({
+        type: "error",
+        title: "Failed to Update State",
+        message: err.response?.data?.message || "Unable to update user state.",
+      });
     } finally {
       setLoading(false);
     }
   };
+  
+  const handleUpdateRole = async (userId: string, newRole: string) => {
+    setLoading(true);
+    try {
+      await UserService.updateUserRole(userId, newRole);
+      setUsers((prev) =>
+        prev.map((u) => (u.id.toString() === userId ? { ...u, role: newRole } : u))
+      );
+      setAlert({
+        type: "success",
+        title: "Role Updated",
+        message: `User role updated to "${newRole}".`,
+      });
+    } catch (err: any) {
+      setAlert({
+        type: "error",
+        title: "Failed to Update Role",
+        message: err.response?.data?.message || "Unable to update user role.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };  
   
 
   const totalPages = pagination.getTotalPages();
@@ -107,6 +125,17 @@ export default function UserTable() {
   return (
     <>
     {loading && <Loading />}
+    {alert && (
+      <div className="mb-4">
+        <Alert
+          variant={alert.type}
+          title={alert.title}
+          message={alert.message}
+          duration={3000}
+          onClose={() => setAlert(null)}
+        />
+      </div>
+    )}
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03] p-4">
       {/* Header: Search + Filters */}
       <div className="mb-4 flex flex-wrap justify-between items-center gap-4">
@@ -231,9 +260,7 @@ export default function UserTable() {
                       value: s, 
                     }))}
                     colorMap={statusColors}
-                    onChange={(val) =>
-                      handleUserUpdate(user.id.toString(), { state: val })
-                    }
+                    onChange={(val) => handleUpdateState(user.id.toString(), val.toString())}
                   />
                 </TableCell>
                 <TableCell>
@@ -244,7 +271,7 @@ export default function UserTable() {
                       value: r.value,
                     }))}
                     colorMap={statusColors}
-                    onChange={(val) => handleUserUpdate(user.id.toString(), { role: val })}
+                    onChange={(val) => handleUpdateRole(user.id.toString(), val.toString())}
                   />
                 </TableCell>
                 </TableRow>

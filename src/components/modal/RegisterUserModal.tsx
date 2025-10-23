@@ -10,9 +10,10 @@ import userService from "../../service/UserService.ts";
 
 interface RegisterUserModalProps {
   onClose: () => void;
+  onSuccess?: (message: { type: "success" | "error"| "warning" | "info"; title: string; message: string }) => void;
 }
 
-const RegisterUserModal: React.FC<RegisterUserModalProps> = ({ onClose }) => {
+const RegisterUserModal: React.FC<RegisterUserModalProps> = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState<AddUserRequest>({
     name: "",
     email: "",
@@ -83,7 +84,11 @@ const RegisterUserModal: React.FC<RegisterUserModalProps> = ({ onClose }) => {
     try {
       const res = await userService.addUser(formData);
       console.log("Response:", res);
-      alert("User added successfully!");
+      onSuccess?.({
+        type: "success",
+        title: "User Added",
+        message: `${res.data.message}`,
+      });
       onClose();
     } catch (err: any) {
       console.error("Register failed:", err);
@@ -91,7 +96,11 @@ const RegisterUserModal: React.FC<RegisterUserModalProps> = ({ onClose }) => {
         err.response?.data?.error?.message ||
         err.response?.data?.message ||
         "Server error";
-      alert(`Add user failed: ${msg}`);
+        onSuccess?.({
+          type: "error",
+          title: "Registration Failed",
+          message: `Add user failed: ${msg}`,
+        });
     } finally {
       setLoading(false);
     }

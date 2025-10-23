@@ -20,8 +20,18 @@ const userService = {
 
     return res.data;
   },
-  updateUserState: async (id: string, data: UpdateUserRequest) => {
+  updateUser: async (id: string, data: UpdateUserRequest) => {
     const res = await axiosClient.put<UserResponse>(`/api/admin/users/${id}`, data);
+    return res.data;
+  },
+  updateUserState: async (userId: string, state: string) => {
+    const res = await axiosClient.put<UserResponse>(
+      `/api/admin/users/${userId}/state?state=${state}`, { params: { state } });
+    return res.data;
+  },
+  updateUserRole: async (userId: string, role: string) => {
+    const res = await axiosClient.put<UserResponse>(
+      `/api/admin/users/${userId}/role?role=${role}`,{ params: { role } });
     return res.data;
   },
   addUser: async (data: AddUserRequest) => {
