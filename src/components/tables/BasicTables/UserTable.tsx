@@ -12,6 +12,7 @@ import { UserStateType, RoleType, StatusType } from "../../../enums";
 import Loading from "../../../loading/Loading";
 import SelectType from "../../ui/select/SelectType";
 import Alert from "../../ui/alert/Alert";
+import CommonModal from "../../ui/modal/CommonModal";
 
 export default function UserTable() {
   const [users, setUsers] = useState<User[]>([]);
@@ -27,6 +28,11 @@ export default function UserTable() {
     title: string;
     message: string;
   } | null>(null);
+
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [onConfirm, setOnConfirm] = useState<() => void>(() => () => {});
+  const [modalTitle, setModalTitle] = useState("");
 
   const statusColors: Record<string, string> = {
     ROLE_OPERATOR: "bg-yellow-100 text-yellow-800",
@@ -73,51 +79,63 @@ export default function UserTable() {
     setPagination(new Pagination(1, newLimit, pagination.total));
   };
 
-  const handleUpdateState = async (userId: string, newState: string) => {
-    setLoading(true);
-    try {
-      await UserService.updateUserState(userId, newState);
-      setUsers((prev) =>
-        prev.map((u) => (u.id.toString() === userId ? { ...u, state: newState } : u))
-      );
-      setAlert({
-        type: "success",
-        title: "State Updated",
-        message: `User state updated to "${newState}".`,
-      });
-    } catch (err: any) {
-      setAlert({
-        type: "error",
-        title: "Failed to Update State",
-        message: err.response?.data?.message || "Unable to update user state.",
-      });
-    } finally {
-      setLoading(false);
-    }
+ const handleUpdateState = (userId: string, newState: string, userName: string) => {
+    setModalMessage(`Are you sure you want to change state of user "${userName}" to "${newState}"?`);
+    setModalTitle("Confirm state change");
+    setOnConfirm(() => async () => {
+      setShowConfirmModal(false);
+      setLoading(true);
+      try {
+        await UserService.updateUserState(userId, newState);
+        setUsers((prev) =>
+          prev.map((u) => (u.id.toString() === userId ? { ...u, state: newState } : u))
+        );
+        setAlert({
+          type: "success",
+          title: "State Updated",
+          message: `User "${userName}" state updated to "${newState}".`,
+        });
+      } catch (err: any) {
+        setAlert({
+          type: "error",
+          title: "Failed to Update State",
+          message: err.response?.data?.message || "Unable to update user state.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    });
+    setShowConfirmModal(true);
   };
-  
-  const handleUpdateRole = async (userId: string, newRole: string) => {
-    setLoading(true);
-    try {
-      await UserService.updateUserRole(userId, newRole);
-      setUsers((prev) =>
-        prev.map((u) => (u.id.toString() === userId ? { ...u, role: newRole } : u))
-      );
-      setAlert({
-        type: "success",
-        title: "Role Updated",
-        message: `User role updated to "${newRole}".`,
-      });
-    } catch (err: any) {
-      setAlert({
-        type: "error",
-        title: "Failed to Update Role",
-        message: err.response?.data?.message || "Unable to update user role.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };  
+
+  const handleUpdateRole = (userId: string, newRole: string, roleLabel: string, userName: string) => {
+    setModalMessage(`Are you sure you want to change role of user "${userName}" to "${roleLabel}"?`);
+    setModalTitle("Confirm role change");
+    setOnConfirm(() => async () => {
+      setShowConfirmModal(false);
+      setLoading(true);
+      try {
+        await UserService.updateUserRole(userId, newRole);
+        setUsers((prev) =>
+          prev.map((u) => (u.id.toString() === userId ? { ...u, role: newRole } : u))
+        );
+        setAlert({
+          type: "success",
+          title: "Role Updated",
+          message: `User "${userName}" role updated to "${roleLabel}".`,
+        });
+      } catch (err: any) {
+        setAlert({
+          type: "error",
+          title: "Failed to Update Role",
+          message: err.response?.data?.message || "Unable to update user role.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    });
+    setShowConfirmModal(true);
+  };
   
 
   const totalPages = pagination.getTotalPages();
@@ -260,7 +278,7 @@ export default function UserTable() {
                       value: s, 
                     }))}
                     colorMap={statusColors}
-                    onChange={(val) => handleUpdateState(user.id.toString(), val.toString())}
+                    onChange={(val) => handleUpdateState(user.id.toString(), val.toString(), user.name)}
                   />
                 </TableCell>
                 <TableCell>
@@ -271,7 +289,15 @@ export default function UserTable() {
                       value: r.value,
                     }))}
                     colorMap={statusColors}
-                    onChange={(val) => handleUpdateRole(user.id.toString(), val.toString())}
+                    onChange={(val) => {
+                      const selected = Object.values(RoleType).find((r) => r.value === val);
+                      handleUpdateRole(
+                        user.id.toString(),
+                        val.toString(),
+                        selected?.label ?? val.toString(),
+                        user.name
+                      );
+                    }}
                   />
                 </TableCell>
                 </TableRow>
@@ -288,6 +314,15 @@ export default function UserTable() {
             )}
           </TableBody>
         </Table>
+        <CommonModal
+          title={modalTitle}
+          show={showConfirmModal}
+          onClose={() => setShowConfirmModal(false)}
+          onSave={onConfirm}
+          saveText="Yes, Confirm"
+          closeText="Cancel"
+          message={modalMessage}
+        />
       </div>
 
       {/* Pagination */}

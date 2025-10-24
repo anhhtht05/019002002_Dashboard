@@ -13,6 +13,7 @@ import { UpdateDeviceRequest } from "../../../model";
 import UpdateDeviceModal from "../../modal/UpdateDeviceModal";
 import Loading from "../../../loading/Loading";
 import Alert from "../../ui/alert/Alert";
+import CommonModal from "../../ui/modal/CommonModal";
 
 export default function DeviceTable() {
   const [devices, setDevices] = useState<any[]>([]);
@@ -30,6 +31,11 @@ export default function DeviceTable() {
   const [hardwareFilter, setHardwareFilter] = useState<string | undefined>();
   const [modelFilter, setModelFilter] = useState<string | undefined>();
   const [search, setSearch] = useState("");
+
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [onConfirm, setOnConfirm] = useState<() => void>(() => () => {});
+
 
   const loadData = async () => {
     setLoading(true);
@@ -52,27 +58,31 @@ export default function DeviceTable() {
       setLoading(false);
     }
   };
-  const handleDelete = async (deviceId: string) => {
-    if (!window.confirm(`Are you sure you want to mark device ${deviceId} as deleted?`)) return;
-    setLoading(true);
-    try {
-      await deviceService.deleteDevice(deviceId);
-      setAlert({
-        type: "success",
-        title: "Device deleted",
-        message: `Device ${deviceId} marked as deleted.`,
-      });
-      loadData();
-    } catch (err: any) {
-      console.error("Failed to delete:", err);
-      setAlert({
-        type: "error",
-        title: "Failed to delete device",
-        message: err.response?.data?.message || "Failed to update device status.",
-      });
-    } finally {
-    setLoading(false);
-  }
+  const handleDelete = (deviceId: string) => {
+    setModalMessage(`Are you sure you want to delete device "${deviceId}"?`);
+    setOnConfirm(() => async () => {
+      setShowConfirmModal(false);
+      setLoading(true);
+      try {
+        await deviceService.deleteDevice(deviceId);
+        setAlert({
+          type: "success",
+          title: "Device Deleted",
+          message: `Device "${deviceId}" has been deleted.`,
+        });
+        loadData();
+      } catch (err: any) {
+        console.error("Failed to delete device:", err);
+        setAlert({
+          type: "error",
+          title: "Delete Failed",
+          message: err.response?.data?.message || "Unable to delete this device.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    });
+    setShowConfirmModal(true);
   };
 
   const handleEdit = (device: UpdateDeviceRequest) => {
@@ -283,6 +293,16 @@ export default function DeviceTable() {
             )}
           </TableBody>
         </Table>
+        <CommonModal
+          title="Confirm Delete"
+          show={showConfirmModal}
+          onClose={() => setShowConfirmModal(false)}
+          onSave={onConfirm}
+          saveText="Yes, Delete"
+          closeText="Cancel"
+          message={modalMessage}
+        >
+        </CommonModal>
       </div>
 
       {/* --- Pagination --- */}

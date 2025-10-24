@@ -14,6 +14,7 @@ import { StatusFirmwareType, getAllowedNextStatuses } from "../../../enums/Statu
 import Loading from "../../../loading/Loading";
 import SelectType from "../../ui/select/SelectType";
 import Alert from "../../ui/alert/Alert";
+import CommonModal from "../../ui/modal/CommonModal";
 
 export default function FirmwareTable() {
   const [firmwares, setFirmwares] = useState<any[]>([]);
@@ -23,7 +24,7 @@ export default function FirmwareTable() {
   const [modelFilter, setModelFilter] = useState<string | undefined>();
   const [hardwareFilter, setHardwareFilter] = useState<string | undefined>();
   const [selectedFirmware, setSelectedFirmware] = useState<any | null>(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showModalUpdate, setShowModalUpdate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<{
     type: "success" | "error" | "warning" | "info";
@@ -36,6 +37,11 @@ export default function FirmwareTable() {
     DEPRECATED: "bg-red-100 text-red-800",
     OUTDATED: "bg-gray-100 text-gray-800"
   };
+  
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [onConfirm, setOnConfirm] = useState<() => void>(() => () => {});
+  const [modalTitle, setModalTitle] = useState("");
 
   const loadData = async () => {
     setLoading(true);
@@ -59,41 +65,49 @@ export default function FirmwareTable() {
     }
   };
   
+
   const handleEdit = (firmware: any) => {
     if (!firmware) return;
     setSelectedFirmware(firmware);
-    setShowModal(true);
+    setShowModalUpdate(true);
   };
   useEffect(() => {
     loadData();
   }, [pagination.page, pagination.limit, statusFilter, hardwareFilter, modelFilter, search]);
 
-  const handleDelete = async (fw: Firmware) => {
-    if (!window.confirm("Are you sure you want to delete this firmware?")) return;
+const handleDelete = (fw: Firmware) => {
+  setModalMessage(`Are you sure you want to delete firmware "${fw.name}"?`);
+  setModalTitle("Confirm firmware deletion");
+  setOnConfirm(() => async () => {
+    setShowModal(false);
     setLoading(true);
-   try {
+    try {
       await firmwareService.deleteFirmware(fw.id);
-  
+
       setAlert({
         type: "success",
         title: "Deleted Successfully",
         message: `Firmware "${fw.name}" has been deleted.`,
-      });  
+      });
       loadData();
     } catch (err: any) {
-      console.error("Failed to update firmware status:", err);
       setAlert({
         type: "error",
         title: "Delete Failed",
         message: err.response?.data?.message || "Failed to delete firmware.",
       });
-    }  finally {
+    } finally {
       setLoading(false);
     }
-  };
-  const updateStatusFirmware = async (fw: Firmware, val : string) => {
-    if (!confirm(`Mark firmware ${fw.name} as ${val}?`)) return;
-  
+  });
+  setShowModal(true);
+};
+
+const updateStatusFirmware = (fw: Firmware, val: string) => {
+  setModalMessage(`Mark firmware "${fw.name}" as ${val}?`);
+  setModalTitle("Confirm firmware update");
+  setOnConfirm(() => async () => {
+    setShowModal(false);
     try {
       setLoading(true);
       await firmwareService.updateStatusFirmware(fw.id, val);
@@ -112,8 +126,10 @@ export default function FirmwareTable() {
     } finally {
       setLoading(false);
     }
-  };
-  
+  });
+  setShowModal(true);
+};
+
 
   const totalPages = pagination.getTotalPages();
 
@@ -331,6 +347,15 @@ export default function FirmwareTable() {
             )}
           </TableBody>
         </Table>
+        <CommonModal
+        title={modalTitle}
+        show={showModal}
+        onClose={() => setShowModal(false)}
+        onSave={onConfirm}
+        saveText="Yes"
+        closeText="Cancel"
+        message={modalMessage}
+      />
       </div>
 
       {/* --- Pagination --- */}
@@ -374,11 +399,11 @@ export default function FirmwareTable() {
           </button>
         </div>
       </div>
-      {showModal && selectedFirmware && (
+      {showModalUpdate && selectedFirmware && (
         <UpdateFirmwareModal
           firmware={selectedFirmware}
           onClose={() => {
-            setShowModal(false);
+            setShowModalUpdate(false);
             setSelectedFirmware(null);
             loadData();
           }}

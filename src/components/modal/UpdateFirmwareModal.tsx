@@ -33,8 +33,8 @@ export default function UpdateFirmwareModal({ firmware, onClose, onSuccess }: Pr
       await firmwareService.updateFirmware(firmware.id, form);
       onSuccess?.({
         type: "success",
-        title: "Device updated",
-        message: "Device updated successfully.",
+        title: "Firmware updated",
+        message: `Firware ${firmware.name} updated successfully.`,
       }); 
       onClose();
     } catch (err: any) {
