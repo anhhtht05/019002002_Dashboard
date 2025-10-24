@@ -13,10 +13,17 @@ import UpdateFirmwareModal from "../../modal/UpdateFirmwareModal";
 import { StatusFirmwareType, getAllowedNextStatuses } from "../../../enums/StatusFimwareType";
 import Loading from "../../../loading/Loading";
 import SelectType from "../../ui/select/SelectType";
-import Alert from "../../ui/alert/Alert";
 import CommonModal from "../../ui/modal/CommonModal";
 
-export default function FirmwareTable() {
+interface FirmwareTableProps {
+  onSuccess?: (alert: {
+    type: "success" | "error" | "warning" | "info";
+    title: string;
+    message: string;
+  }) => void;
+}
+
+export default function FirmwareTable({onSuccess}: FirmwareTableProps) {
   const [firmwares, setFirmwares] = useState<any[]>([]);
   const [pagination, setPagination] = useState(new Pagination(1, 5, 0));
   const [search, setSearch] = useState("");
@@ -26,11 +33,6 @@ export default function FirmwareTable() {
   const [selectedFirmware, setSelectedFirmware] = useState<any | null>(null);
   const [showModalUpdate, setShowModalUpdate] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState<{
-    type: "success" | "error" | "warning" | "info";
-    title: string;
-    message: string;
-  } | null>(null);
   const statusColors: Record<string, string> = {
     DRAFT: "bg-yellow-100 text-yellow-800",
     RELEASED: "bg-green-100 text-green-800",
@@ -84,14 +86,14 @@ const handleDelete = (fw: Firmware) => {
     try {
       await firmwareService.deleteFirmware(fw.id);
 
-      setAlert({
+      onSuccess?.({
         type: "success",
         title: "Deleted Successfully",
         message: `Firmware "${fw.name}" has been deleted.`,
       });
       loadData();
     } catch (err: any) {
-      setAlert({
+      onSuccess?.({
         type: "error",
         title: "Delete Failed",
         message: err.response?.data?.message || "Failed to delete firmware.",
@@ -112,13 +114,13 @@ const updateStatusFirmware = (fw: Firmware, val: string) => {
       setLoading(true);
       await firmwareService.updateStatusFirmware(fw.id, val);
       await loadData();
-      setAlert({
+      onSuccess?.({
         type: "success",
         title: "Status Updated",
         message: `Firmware "${fw.name}" marked as ${val}.`,
       });
     } catch (err: any) {
-      setAlert({
+      onSuccess?.({
         type: "error",
         title: "Update Failed",
         message: err.response?.data?.message || "Failed to update firmware status.",
@@ -136,17 +138,6 @@ const updateStatusFirmware = (fw: Firmware, val: string) => {
   return (
     <>
     {loading && <Loading />}
-    {alert && (
-      <div className="mb-4">
-        <Alert
-          variant={alert.type}
-          title={alert.title}
-          message={alert.message}
-          duration={3000}
-          onClose={() => setAlert(null)}
-        />
-      </div>
-    )}
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-md dark:border-white/[0.05] dark:bg-gray-900">
       {/* --- Filter Section --- */}
     <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -408,7 +399,7 @@ const updateStatusFirmware = (fw: Firmware, val: string) => {
             loadData();
           }}
           onSuccess={(msg) => {
-            setAlert(msg); 
+            onSuccess?.(msg); 
             loadData(); 
           }}
         />

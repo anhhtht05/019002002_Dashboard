@@ -6,15 +6,22 @@ import {
   TableHeader,
   TableRow,
 } from "../../ui/table";
-import { User, Pagination, UpdateUserRequest } from "../../../model";
+import { User, Pagination } from "../../../model";
 import UserService from "../../../service/UserService";
 import { UserStateType, RoleType, StatusType } from "../../../enums";
 import Loading from "../../../loading/Loading";
 import SelectType from "../../ui/select/SelectType";
-import Alert from "../../ui/alert/Alert";
 import CommonModal from "../../ui/modal/CommonModal";
 
-export default function UserTable() {
+interface UserTableProps {
+  onSuccess?: (alert: {
+    type: "success" | "error" | "warning" | "info";
+    title: string;
+    message: string;
+  }) => void;
+}
+
+export default function UserTable({ onSuccess }: UserTableProps) {
   const [users, setUsers] = useState<User[]>([]);
   const [pagination, setPagination] = useState<Pagination>(
     new Pagination(1, 5, 0)
@@ -23,12 +30,6 @@ export default function UserTable() {
   const [stateFilter, setStateFilter] = useState<string | undefined>();
   const [roleFilter, setRoleFilter] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState<{
-    type: "success" | "error" | "warning" | "info";
-    title: string;
-    message: string;
-  } | null>(null);
-
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [onConfirm, setOnConfirm] = useState<() => void>(() => () => {});
@@ -90,13 +91,13 @@ export default function UserTable() {
         setUsers((prev) =>
           prev.map((u) => (u.id.toString() === userId ? { ...u, state: newState } : u))
         );
-        setAlert({
+        onSuccess?.({
           type: "success",
           title: "State Updated",
           message: `User "${userName}" state updated to "${newState}".`,
         });
       } catch (err: any) {
-        setAlert({
+        onSuccess?.({
           type: "error",
           title: "Failed to Update State",
           message: err.response?.data?.message || "Unable to update user state.",
@@ -119,13 +120,13 @@ export default function UserTable() {
         setUsers((prev) =>
           prev.map((u) => (u.id.toString() === userId ? { ...u, role: newRole } : u))
         );
-        setAlert({
+        onSuccess?.({
           type: "success",
           title: "Role Updated",
           message: `User "${userName}" role updated to "${roleLabel}".`,
         });
       } catch (err: any) {
-        setAlert({
+        onSuccess?.({
           type: "error",
           title: "Failed to Update Role",
           message: err.response?.data?.message || "Unable to update user role.",
@@ -143,17 +144,6 @@ export default function UserTable() {
   return (
     <>
     {loading && <Loading />}
-    {alert && (
-      <div className="mb-4">
-        <Alert
-          variant={alert.type}
-          title={alert.title}
-          message={alert.message}
-          duration={3000}
-          onClose={() => setAlert(null)}
-        />
-      </div>
-    )}
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03] p-4">
       {/* Header: Search + Filters */}
       <div className="mb-4 flex flex-wrap justify-between items-center gap-4">

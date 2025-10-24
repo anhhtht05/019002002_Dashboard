@@ -34,7 +34,7 @@ export default function DeviceTables() {
         actionLabel="Add Device"
         onSuccess={(data) => setAlertData(data)}
       >
-          <DeviceTable />
+          <DeviceTable onSuccess={(data) => setAlertData(data)}/>
         </ComponentCard>
       </div>
     </>

@@ -32,7 +32,7 @@ export default function UserTables() {
           actionLabel="Add User"
           onSuccess={(data) => setAlertData(data)}
         >
-          <UserTable/>
+          <UserTable onSuccess={(data) => setAlertData(data)} />
         </ComponentCard>
       </div>
     </>

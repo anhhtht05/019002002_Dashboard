@@ -32,7 +32,7 @@ export default function FirmwareTables() {
           actionLabel="Upload Firmware"
           onSuccess={(data) => setAlertData(data)}
         >
-          <FirmwareTable/>
+          <FirmwareTable onSuccess={(data) => setAlertData(data)}/>
         </ComponentCard>
       </div>
     </>

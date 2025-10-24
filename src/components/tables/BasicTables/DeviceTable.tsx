@@ -12,21 +12,22 @@ import { DeviceType, ModelType, HardwareType } from "../../../enums";
 import { UpdateDeviceRequest } from "../../../model";
 import UpdateDeviceModal from "../../modal/UpdateDeviceModal";
 import Loading from "../../../loading/Loading";
-import Alert from "../../ui/alert/Alert";
 import CommonModal from "../../ui/modal/CommonModal";
 
-export default function DeviceTable() {
+interface DeviceTableProps {
+  onSuccess?: (alert: {
+    type: "success" | "error" | "warning" | "info";
+    title: string;
+    message: string;
+  }) => void;
+}
+
+export default function DeviceTable({ onSuccess }: DeviceTableProps) {
   const [devices, setDevices] = useState<any[]>([]);
   const [pagination, setPagination] = useState(new Pagination(1, 5, 0));
   const [selectedDevice, setSelectedDevice] = useState<UpdateDeviceRequest | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState<{
-    type: "success" | "error" | "warning" | "info";
-    title: string;
-    message: string;
-  } | null>(null);
-  // Filters
   const [deviceTypeFilter, setDeviceTypeFilter] = useState<string | undefined>();
   const [hardwareFilter, setHardwareFilter] = useState<string | undefined>();
   const [modelFilter, setModelFilter] = useState<string | undefined>();
@@ -65,7 +66,7 @@ export default function DeviceTable() {
       setLoading(true);
       try {
         await deviceService.deleteDevice(deviceId);
-        setAlert({
+        onSuccess?.({
           type: "success",
           title: "Device Deleted",
           message: `Device "${deviceId}" has been deleted.`,
@@ -73,7 +74,7 @@ export default function DeviceTable() {
         loadData();
       } catch (err: any) {
         console.error("Failed to delete device:", err);
-        setAlert({
+        onSuccess?.({
           type: "error",
           title: "Delete Failed",
           message: err.response?.data?.message || "Unable to delete this device.",
@@ -99,17 +100,6 @@ export default function DeviceTable() {
   return (
     <>
     {loading && <Loading />}
-    {alert && (
-      <div className="mb-4">
-        <Alert
-          variant={alert.type}
-          title={alert.title}
-          message={alert.message}
-          duration={3000}
-          onClose={() => setAlert(null)}
-        />
-      </div>
-    )}
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-md dark:border-white/[0.05] dark:bg-gray-900">
       {/* --- Filter + Search --- */}
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -355,7 +345,8 @@ export default function DeviceTable() {
             loadData(); 
           }}
           onSuccess={(msg) => {
-            setAlert(msg); 
+            onSuccess?.(msg); 
+            {console.log(msg)}
             loadData(); 
           }}
         />
