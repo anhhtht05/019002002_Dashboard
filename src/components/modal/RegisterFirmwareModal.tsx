@@ -55,19 +55,12 @@ const RegisterFirmwareModal: React.FC<RegisterFirmwareModalProps> = ({ onClose, 
       onClose();
     } catch (err: any) {
       console.error("Upload failed:", err);
-      if (err.response) {
         onSuccess?.({
           type: "error",
           title: "Update failed",
-          message: `Upload failed: ${err.response.data.error?.message || "Server error"}`,
+          message: `Upload failed: ${err.response.data.message || "Server error"}`,
         });        
-      } else {
-        onSuccess?.({
-          type: "error",
-          title: "Update failed",
-          message: `Network error: ${err.message}`,
-        });
-      }
+  
     } finally {
       setLoading(false);
     }

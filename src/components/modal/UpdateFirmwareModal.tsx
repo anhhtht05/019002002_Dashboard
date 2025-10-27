@@ -47,7 +47,7 @@ export default function UpdateFirmwareModal({ firmware, onClose, onSuccess }: Pr
       onSuccess?.({
         type: "error",
         title: "Update failed",
-        message: `Update failed: ${err.response.data.error?.message}` || "Failed to update firmware. Please try again.",
+        message: `Update failed: ${err.response.data.message}` || "Failed to update firmware. Please try again.",
       });
     } finally {
       setLoading(false);

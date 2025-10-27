@@ -13,7 +13,6 @@ export function useDeviceValidation<T extends Record<string, any>>(formData: T) 
     switch (key) {
       case "deviceId":
         if (!value.trim()) return "Device ID is required";
-        if (value.length < 4) return "Device ID must be at least 4 characters";
         return "";
 
       case "deviceName":
@@ -65,7 +64,6 @@ export function useDeviceValidation<T extends Record<string, any>>(formData: T) 
         if (err) newErrors[String(key)] = err;
       }
     });
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };

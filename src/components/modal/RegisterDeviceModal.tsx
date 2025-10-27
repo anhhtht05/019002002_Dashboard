@@ -84,7 +84,6 @@ const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose, onSu
         <h2 className="text-3xl font-semibold text-gray-800 dark:text-gray-100 text-center mb-8">
           Add New Device
         </h2>
-
         {/* Form */}
         <form onSubmit={handleSubmit} className="w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

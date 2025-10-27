@@ -7,7 +7,7 @@ import { EyeIcon, EyeCloseIcon } from "../../icons";
 import Loading from "../../loading/Loading.tsx";
 import { AddUserRequest } from "../../model/AddUserRequest.ts";
 import userService from "../../service/UserService.ts";
-import { useValidation } from "../../hooks/useUserValidation.ts";
+import { useUserValidation } from "../../hooks/useUserValidation.ts";
 interface RegisterUserModalProps {
   onClose: () => void;
   onSuccess?: (message: { type: "success" | "error"| "warning" | "info"; title: string; message: string }) => void;
@@ -25,7 +25,7 @@ const RegisterUserModal: React.FC<RegisterUserModalProps> = ({ onClose, onSucces
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const { errors, validateAll, handleBlur, clearError } = useValidation(formData, confirmPassword);
+  const { errors, validateAll, handleBlur, clearError } = useUserValidation(formData, confirmPassword);
 
   const handleChange = (key: keyof AddUserRequest | "confirmPassword", value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
