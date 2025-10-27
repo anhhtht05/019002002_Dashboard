@@ -6,7 +6,8 @@ import {
   TableHeader,
   TableRow,
 } from "../../ui/table";
-import { User, Pagination } from "../../../model";
+import { User } from "../../../Model/User";
+import { Pagination } from "../../../model";
 import UserService from "../../../service/UserService";
 import { UserStateType, RoleType, StatusType } from "../../../enums";
 import Loading from "../../../loading/Loading";

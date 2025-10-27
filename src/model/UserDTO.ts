@@ -13,4 +13,3 @@ export class User {
         this.email = email;
     }
   }
-  

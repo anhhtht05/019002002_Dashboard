@@ -1,4 +1,4 @@
-import { User } from './User';
+import { User } from "./UserDTO";
 
 export class UserResponse {
   data: User[];

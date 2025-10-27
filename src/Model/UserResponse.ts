@@ -1,4 +1,5 @@
 import { User } from "./User";
+
 export class UserResponse {
   data: User[];
   pagination: {
