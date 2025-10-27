@@ -17,6 +17,8 @@ import FirmwareTables from "./pages/Tables/FirmwareTables";
 import DeviceTables from "./pages/Tables/DeviceTables";
 // import FormElements from "./pages/Forms/FormElements";
 // import Blank from "./pages/Blank";
+
+
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
@@ -47,7 +49,7 @@ export default function App() {
             <Route path="/device" element={<DeviceTables />} />
             <Route path="/firmware" element={<FirmwareTables />} />
             {/* <Route path="/firmware-download-history" element={<FirmwareDownloadHistoryTables />} /> */}
-            
+           
             {/* Ui Elements */}
             <Route path="/alerts" element={<Alerts />} />
             {/* <Route path="/avatars" element={<Avatars />} />
