@@ -1,5 +1,5 @@
 import axiosClient from "./AxiosClient";
-import { UserResponse } from "../model/UserResponse";
+import { UserResponse } from "../model/UserAllResponse";
 import { AddUserRequest, UpdateUserRequest } from "../model";
 
 const userService = {

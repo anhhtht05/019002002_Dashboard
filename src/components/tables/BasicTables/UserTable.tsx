@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../ui/table";
-import { User } from "../../../Model/User";
+import { User } from "../../../model/UserDTO";
 import { Pagination } from "../../../model";
 import UserService from "../../../service/UserService";
 import { UserStateType, RoleType, StatusType } from "../../../enums";
