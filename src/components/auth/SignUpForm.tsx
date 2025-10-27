@@ -4,7 +4,6 @@ import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
-import { authService } from "../../service/AuthService";
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -23,7 +22,6 @@ export default function SignUpForm() {
       return;
     }
     try {
-      const fullName = `${fname} ${lname}`;
       alert("Sign up successful!");
       navigate("/signin");
     } catch (err) {

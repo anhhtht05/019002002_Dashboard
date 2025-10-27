@@ -1,5 +1,5 @@
-export * from "./user"
-export * from "./userResponse"
+export * from "./User"
+export * from "./UserResponse"
 export * from "./Pagination"
 export * from "./DeviceResponse"
 export * from "./Device"

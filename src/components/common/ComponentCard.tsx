@@ -10,6 +10,7 @@ interface ModalProps {
 }
 interface ComponentCardProps {
   title: string;
+  desc?: string;
   children: React.ReactNode;
   className?: string;
   modalComponent?: React.ComponentType<ModalProps>;

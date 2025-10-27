@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { BoxIconLine, GroupIcon } from "../../icons";
 import UserService from "../../service/UserService";
 import deviceService from "../../service/DeviceService";
