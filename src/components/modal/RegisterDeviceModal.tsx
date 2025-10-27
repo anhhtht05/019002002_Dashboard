@@ -6,6 +6,8 @@ import Input from "../form/input/InputField.tsx";
 import Select from "../form/Select.tsx";
 import { DeviceType, ModelType, HardwareType } from "../../enums";
 import Loading from "../../loading/Loading.tsx";
+import { useDeviceValidation } from "../../hooks/useDeviceValidation.ts";
+import { RegisterDeviceRequest } from "../../model/RegisterDeviceRequest.ts";
 
 interface RegisterDeviceModalProps {
   onClose: () => void;
@@ -13,7 +15,7 @@ interface RegisterDeviceModalProps {
 }
 
 const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose, onSuccess }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<RegisterDeviceRequest>({
     deviceId: "",
     deviceName: "",
     deviceType: "",
@@ -23,15 +25,19 @@ const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose, onSu
     manufacturer: "",
     model: "",
   });
+  
+  const { errors, validateAll, handleBlur, clearError } = useDeviceValidation(formData);
 
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (key: string, value: string) => {
+  const handleChange = (key: keyof RegisterDeviceRequest, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
+    clearError(key);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateAll()) return;
     setLoading(true);
     try {
       const res = await deviceService.registerDevice(formData);
@@ -89,9 +95,13 @@ const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose, onSu
                 type="text"
                 placeholder="Enter device ID"
                 value={formData.deviceId}
-                onChange={(e) => handleChange("deviceId", e.target.value)}
+                onChange={(e) => {
+                  handleChange("deviceId", e.target.value);
+                }}
+                onBlur={() => handleBlur("deviceId")}
                 className="h-12 text-base"
               />
+              {errors.deviceId && <p className="text-red-500 text-sm mt-1">{errors.deviceId}</p>}
             </div>
 
             <div className="w-full">
@@ -101,9 +111,13 @@ const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose, onSu
                 type="text"
                 placeholder="Enter device name"
                 value={formData.deviceName}
-                onChange={(e) => handleChange("deviceName", e.target.value)}
+                onChange={(e) => {
+                  handleChange("deviceName", e.target.value);
+                }}
+                onBlur={() => handleBlur("deviceName")}
                 className="h-12 text-base"
               />
+              {errors.deviceName && <p className="text-red-500 text-sm mt-1">{errors.deviceName}</p>}
             </div>
 
             <div className="w-full">
@@ -112,8 +126,10 @@ const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose, onSu
                 options={Object.values(DeviceType).map((v) => ({ label: v, value: v }))}
                 placeholder="Select device type"
                 onChange={(value) => handleChange("deviceType", value)}
+                onBlur={() => handleBlur("deviceType")}
                 className="h-12 text-base"
               />
+              {errors.deviceType && <p className="text-red-500 text-sm mt-1">{errors.deviceType}</p>}
             </div>
 
             <div className="w-full">
@@ -122,8 +138,10 @@ const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose, onSu
                 options={Object.values(HardwareType).map((v) => ({ label: v, value: v }))}
                 placeholder="Select hardware version"
                 onChange={(value) => handleChange("hardwareVersion", value)}
+                onBlur={() => handleBlur("hardwareVersion")}
                 className="h-12 text-base"
               />
+              {errors.hardwareVersion && <p className="text-red-500 text-sm mt-1">{errors.hardwareVersion}</p>}
             </div>
 
             <div className="w-full">
@@ -134,8 +152,10 @@ const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose, onSu
                 placeholder="Enter serial number"
                 value={formData.serialNumber}
                 onChange={(e) => handleChange("serialNumber", e.target.value)}
+                onBlur={() => handleBlur("serialNumber")}
                 className="h-12 text-base"
               />
+              {errors.serialNumber && <p className="text-red-500 text-sm mt-1">{errors.serialNumber}</p>}
             </div>
 
             <div className="w-full">
@@ -146,8 +166,10 @@ const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose, onSu
                 placeholder="Enter MAC address"
                 value={formData.macAddress}
                 onChange={(e) => handleChange("macAddress", e.target.value)}
+                onBlur={() => handleBlur("macAddress")}
                 className="h-12 text-base"
               />
+               {errors.macAddress && <p className="text-red-500 text-sm mt-1">{errors.macAddress}</p>}
             </div>
 
             <div className="w-full">
@@ -158,8 +180,10 @@ const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose, onSu
                 placeholder="Enter manufacturer name"
                 value={formData.manufacturer}
                 onChange={(e) => handleChange("manufacturer", e.target.value)}
+                onBlur={() => handleBlur("manufacturer")}
                 className="h-12 text-base"
               />
+              {errors.manufacturer && <p className="text-red-500 text-sm mt-1">{errors.manufacturer}</p>}
             </div>
 
             <div className="w-full">
@@ -168,8 +192,10 @@ const RegisterDeviceModal: React.FC<RegisterDeviceModalProps> = ({ onClose, onSu
                 options={Object.values(ModelType).map((v) => ({ label: v, value: v }))}
                 placeholder="Select model"
                 onChange={(value) => handleChange("model", value)}
+                onBlur={() => handleBlur("model")}
                 className="h-12 text-base"
               />
+              {errors.model && <p className="text-red-500 text-sm mt-1">{errors.model}</p>}
             </div>
           </div>
 

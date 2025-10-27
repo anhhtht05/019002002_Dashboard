@@ -7,7 +7,7 @@ import { EyeIcon, EyeCloseIcon } from "../../icons";
 import Loading from "../../loading/Loading.tsx";
 import { AddUserRequest } from "../../model/AddUserRequest.ts";
 import userService from "../../service/UserService.ts";
-
+import { useValidation } from "../../hooks/useUserValidation.ts";
 interface RegisterUserModalProps {
   onClose: () => void;
   onSuccess?: (message: { type: "success" | "error"| "warning" | "info"; title: string; message: string }) => void;
@@ -21,59 +21,15 @@ const RegisterUserModal: React.FC<RegisterUserModalProps> = ({ onClose, onSucces
   });
 
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const validateField = (key: keyof AddUserRequest | "confirmPassword", value: string): string => {
-    switch (key) {
-      case "name":
-        if (!value.trim()) return "Name is required";
-        if (value.trim().length < 3)
-          return "Name must be at least 3 characters";
-        return "";
-      case "email":
-        if (!value.trim()) return "Email is required";
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
-          return "Invalid email format";
-        return "";
-      case "password":
-        if (!value) return "Password is required";
-        if (
-          !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}[\]:;<>,.?~\-=/\\]).{8,}$/.test(
-            value
-          )
-        )
-          return "Password must be 8+ chars, include upper, lower, number, and special char";
-        return "";
-      case "confirmPassword":
-        if (!value) return "Please confirm password";
-        if (value !== formData.password) return "Passwords do not match";
-        return "";
-      default:
-        return "";
-    }
-  };
+  const { errors, validateAll, handleBlur, clearError } = useValidation(formData, confirmPassword);
 
-  const validateAll = (): boolean => {
-    const newErrors: Record<string, string> = {};
-    Object.entries({ ...formData, confirmPassword }).forEach(([key, value]) => {
-      const err = validateField(key as keyof AddUserRequest | "confirmPassword", value);
-      if (err) newErrors[key] = err;
-    });
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleChange = (key: keyof AddUserRequest, value: string) => {
+  const handleChange = (key: keyof AddUserRequest | "confirmPassword", value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
-    if (errors[key]) setErrors((prev) => ({ ...prev, [key]: "" }));
-  };
-
-  const handleBlur = (key: keyof AddUserRequest | "confirmPassword", value: string) => {
-    const errMsg = validateField(key, value);
-    setErrors((prev) => ({ ...prev, [key]: errMsg }));
+    clearError(key);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -137,6 +93,7 @@ const RegisterUserModal: React.FC<RegisterUserModalProps> = ({ onClose, onSucces
                 placeholder="Enter full name"
                 value={formData.name}
                 onChange={(e) => handleChange("name", e.target.value)}
+                onBlur={(e) => handleBlur("name", e.target.value)}
                 className={`h-12 text-base ${errors.name ? "border-red-500" : ""}`}
               />
               {errors.name && (
@@ -154,6 +111,7 @@ const RegisterUserModal: React.FC<RegisterUserModalProps> = ({ onClose, onSucces
                 type="email"
                 placeholder="Enter email"
                 value={formData.email}
+                onBlur={(e) => handleBlur("email", e.target.value)}
                 onChange={(e) => handleChange("email", e.target.value)}
                 // onBlur={(e) => handleBlur("email", e.target.value)}
                 
@@ -176,7 +134,7 @@ const RegisterUserModal: React.FC<RegisterUserModalProps> = ({ onClose, onSucces
                   placeholder="Enter password"
                   value={formData.password}
                   onChange={(e) => handleChange("password", e.target.value)}
-                  // onBlur={(e) => handleBlur("password", e.target.value)}
+                  onBlur={(e) => handleBlur("password", e.target.value)}
                   className={`h-12 text-base ${errors.password ? "border-red-500" : ""}`}
                 />
                 <span
@@ -201,17 +159,16 @@ const RegisterUserModal: React.FC<RegisterUserModalProps> = ({ onClose, onSucces
                 Confirm Password
               </Label>
               <div className="relative">
-                <Input
+              <Input
                   id="confirmPassword"
                   type={showConfirm ? "text" : "password"}
                   placeholder="Re-enter password"
                   value={confirmPassword}
                   onChange={(e) => {
                     setConfirmPassword(e.target.value);
-                    if (errors.confirmPassword)
-                      setErrors((prev) => ({ ...prev, confirmPassword: "" }));
+                    clearError("confirmPassword");
                   }}
-                  // onBlur={(e) => handleBlur("confirmPassword", e.target.value)}
+                  onBlur={(e) => handleBlur("confirmPassword", e.target.value)}
                   className={`h-12 text-base ${errors.confirmPassword ? "border-red-500" : ""}`}
                 />
                 <span
@@ -227,7 +184,9 @@ const RegisterUserModal: React.FC<RegisterUserModalProps> = ({ onClose, onSucces
               </div>
               {errors.confirmPassword && (
                 <p className="text-red-500 text-sm mt-1">
-                  {errors.confirmPassword}
+                  {errors.confirmPassword && (
+                    <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+                  )}
                 </p>
               )}
             </div>

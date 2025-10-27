@@ -8,6 +8,7 @@ import { ModelType, HardwareType } from "../../enums";
 import { UploadFirmwareRequest } from "../../model/UploadFirmwareRequest";
 import TextArea from "../form/input/TextArea";
 import Loading from "../../loading/Loading";
+import { useFirmwareValidation } from "../../hooks/useFirmwareValidation";
 
 interface RegisterFirmwareModalProps {
   onClose: () => void;
@@ -23,11 +24,14 @@ const RegisterFirmwareModal: React.FC<RegisterFirmwareModalProps> = ({ onClose, 
     hardwareCompat: [],    
     file: null as unknown as File,
   });
+  
+  const { errors, validateAll, handleBlur, clearError } = useFirmwareValidation(formData);
 
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (key: string, value: string | string[]) => {
+  const handleChange = (key: keyof UploadFirmwareRequest, value: string | string[]) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
+    clearError(key);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,16 +42,7 @@ const RegisterFirmwareModal: React.FC<RegisterFirmwareModalProps> = ({ onClose, 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!formData.file) {
-      onSuccess?.({
-        type: "warning",
-        title: "Warning upload",
-        message: "Please upload a firmware file!",
-      });
-      return;
-    }
-
+    if (!validateAll()) return;
     setLoading(true);
     try {
       const res = await firmwareService.uploadFirmware(formData);
@@ -103,8 +98,10 @@ const RegisterFirmwareModal: React.FC<RegisterFirmwareModalProps> = ({ onClose, 
             type="text"
             placeholder="e.g. v1.0.9"
             value={formData.version}
+            onBlur={() => handleBlur("version")}
             onChange={(e) => handleChange("version", e.target.value)}
           />
+           {errors.version && <p className="text-red-500 text-sm mt-1">{errors.version}</p>}
         </div>
 
         <div className="w-full">
@@ -114,37 +111,47 @@ const RegisterFirmwareModal: React.FC<RegisterFirmwareModalProps> = ({ onClose, 
             type="text"
             placeholder="e.g. ESP32 Firmware"
             value={formData.firmwareName}
+            onBlur={() => handleBlur("firmwareName")}
             onChange={(e) => handleChange("firmwareName", e.target.value)}
           />
+          {errors.firmwareName && <p className="text-red-500 text-sm mt-1">{errors.firmwareName}</p>}
         </div>
 
         <div className="md:col-span-2 w-full">
           <Label htmlFor="description">Description</Label>
           <TextArea
             value={formData.description}
+            onBlur={() => handleBlur("description")}
             onChange={(value) => handleChange("description", value)}
             rows={6}
             placeholder="Enter firmware update details"
             className="w-full"
           />
+          {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
         </div>
 
-        <div className="w-full">
+        <div className="w-full"
+        tabIndex={0}
+        onBlur={() => handleBlur("modelCompat")}>
           <MultiSelect
             label="Model Compatibility"
             options={Object.values(ModelType).map((v) => ({ text: v, value: v }))}
             defaultSelected={formData.modelCompat}
             onChange={(values) => handleChange("modelCompat", values)}
           />
+          {errors.modelCompat && (<p className="text-red-500 text-sm mt-1">{errors.modelCompat}</p>)}
         </div>
 
-        <div className="w-full">
+        <div className="w-full"
+        tabIndex={0}
+        onBlur={() => handleBlur("hardwareCompat")}>
           <MultiSelect
             label="Hardware Compatibility"
             options={Object.values(HardwareType).map((v) => ({ text: v, value: v }))}
             defaultSelected={formData.hardwareCompat}
             onChange={(values) => handleChange("hardwareCompat", values)}
           />
+          {errors.hardwareCompat && (<p className="text-red-500 text-sm mt-1">{errors.hardwareCompat}</p>)}
         </div>
 
         <div className="md:col-span-2 w-full">
@@ -153,8 +160,10 @@ const RegisterFirmwareModal: React.FC<RegisterFirmwareModalProps> = ({ onClose, 
             type="file"
             accept=".bin"
             onChange={handleFileChange}
+            onBlur={() => handleBlur("file")}
             className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
           />
+          {errors.file && <p className="text-red-500 text-sm mt-1">{errors.file}</p>}
         </div>
       </div>
 

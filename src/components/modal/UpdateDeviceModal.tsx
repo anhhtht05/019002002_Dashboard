@@ -7,7 +7,7 @@ import Select from "../form/Select.tsx";
 import { DeviceType, ModelType, HardwareType } from "../../enums";
 import { UpdateDeviceRequest } from "../../model/UpdateDeviceRequest.ts";
 import Loading from "../../loading/Loading.tsx";
-
+import { useDeviceValidation } from "../../hooks/useDeviceValidation.ts";
 interface UpdateDeviceModalProps {
   device: UpdateDeviceRequest;
   onClose: () => void;
@@ -26,15 +26,18 @@ const UpdateDeviceModal: React.FC<UpdateDeviceModalProps> = ({ device, onClose, 
     model: device.model || "",
     status: device.status || "",
   });
+  const { errors, validateAll, handleBlur, clearError } = useDeviceValidation(formData);
 
   const [loading, setLoading] = useState(false);
 
   const handleChange = (key: keyof UpdateDeviceRequest, value: string) => {
     setFormData((prev: UpdateDeviceRequest) => ({ ...prev, [key]: value }));
+    clearError(key);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateAll()) return;
     setLoading(true);
     try {
       await deviceService.updateDevice(formData);
@@ -85,15 +88,17 @@ const UpdateDeviceModal: React.FC<UpdateDeviceModalProps> = ({ device, onClose, 
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="w-full">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="w-full">
               <Label htmlFor="deviceId" className="text-base font-medium">Device ID</Label>
               <Input
                 id="deviceId"
                 type="text"
+                disabled={true}
                 value={formData.deviceId}
-                className="h-12 text-base bg-gray-100 cursor-not-allowed"
+                className="h-12 text-base cursor-not-allowed"
               />
+              {errors.deviceId && <p className="text-red-500 text-sm mt-1">{errors.deviceId}</p>}
             </div>
 
             <div className="w-full">
@@ -103,8 +108,10 @@ const UpdateDeviceModal: React.FC<UpdateDeviceModalProps> = ({ device, onClose, 
                 type="text"
                 value={formData.deviceName}
                 onChange={(e) => handleChange("deviceName", e.target.value)}
+                onBlur={() => handleBlur("deviceName")}
                 className="h-12 text-base"
               />
+              {errors.deviceName && <p className="text-red-500 text-sm mt-1">{errors.deviceName}</p>}
             </div>
 
             <div className="w-full">
@@ -114,8 +121,10 @@ const UpdateDeviceModal: React.FC<UpdateDeviceModalProps> = ({ device, onClose, 
                 placeholder="Select device type"
                 defaultValue={formData.deviceType}
                 onChange={(value) => handleChange("deviceType", value)}
+                onBlur={() => handleBlur("deviceType")}
                 className="h-12 text-base"
               />
+              {errors.deviceType && <p className="text-red-500 text-sm mt-1">{errors.deviceType}</p>}
             </div>
 
             <div className="w-full">
@@ -125,8 +134,10 @@ const UpdateDeviceModal: React.FC<UpdateDeviceModalProps> = ({ device, onClose, 
                 placeholder="Select hardware version"
                 defaultValue={formData.hardwareVersion}
                 onChange={(value) => handleChange("hardwareVersion", value)}
+                onBlur={() => handleBlur("hardwareVersion")}
                 className="h-12 text-base"
               />
+              {errors.hardwareVersion && <p className="text-red-500 text-sm mt-1">{errors.hardwareVersion}</p>}
             </div>
 
             <div className="w-full">
@@ -136,8 +147,10 @@ const UpdateDeviceModal: React.FC<UpdateDeviceModalProps> = ({ device, onClose, 
                 type="text"
                 value={formData.serialNumber}
                 onChange={(e) => handleChange("serialNumber", e.target.value)}
+                onBlur={() => handleBlur("serialNumber")}
                 className="h-12 text-base"
               />
+              {errors.serialNumber && <p className="text-red-500 text-sm mt-1">{errors.serialNumber}</p>}
             </div>
 
             <div className="w-full">
@@ -147,8 +160,10 @@ const UpdateDeviceModal: React.FC<UpdateDeviceModalProps> = ({ device, onClose, 
                 type="text"
                 value={formData.macAddress}
                 onChange={(e) => handleChange("macAddress", e.target.value)}
+                onBlur={() => handleBlur("macAddress")}
                 className="h-12 text-base"
               />
+               {errors.macAddress && <p className="text-red-500 text-sm mt-1">{errors.macAddress}</p>}
             </div>
 
             <div className="w-full">
@@ -158,8 +173,10 @@ const UpdateDeviceModal: React.FC<UpdateDeviceModalProps> = ({ device, onClose, 
                 type="text"
                 value={formData.manufacturer}
                 onChange={(e) => handleChange("manufacturer", e.target.value)}
+                onBlur={() => handleBlur("manufacturer")}
                 className="h-12 text-base"
               />
+              {errors.manufacturer && <p className="text-red-500 text-sm mt-1">{errors.manufacturer}</p>}
             </div>
 
             <div className="w-full">
@@ -169,8 +186,10 @@ const UpdateDeviceModal: React.FC<UpdateDeviceModalProps> = ({ device, onClose, 
                 placeholder="Select model"
                 defaultValue={formData.model}
                 onChange={(value) => handleChange("model", value)}
+                onBlur={() => handleBlur("model")}
                 className="h-12 text-base"
               />
+              {errors.model && <p className="text-red-500 text-sm mt-1">{errors.model}</p>}
             </div>
 
             {/* <div className="w-full">

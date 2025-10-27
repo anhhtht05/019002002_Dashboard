@@ -8,12 +8,15 @@ import { authService } from "../../service/AuthService";
 import { GetUserResponse, UpdateUserRequest } from "../../model";
 import userService from "../../service/UserService";
 import Loading from "../../loading/Loading";
+import { useUserValidation } from "../../hooks/useUserValidation";
 
 export default function UserInfoCard() {
   const { isOpen, openModal, closeModal } = useModal();
   const [user, setUser] = useState<GetUserResponse | null>(null);
-  const [form, setForm] = useState<Partial<UpdateUserRequest>>({});
+  const [form, setForm] = useState<UpdateUserRequest>({ name: "", email: "" });
   const [loading, setLoading] = useState(false);
+  const { errors, validateField, handleBlur, validateAll, resetErrors} = useUserValidation(form);
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -32,10 +35,13 @@ export default function UserInfoCard() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    validateField(name as keyof UpdateUserRequest, value);
   };
 
   const handleSave = async () => {
     if (!user?.id) return;
+    const valid = validateAll();
+    if (!valid) return;
     setLoading(true);
     try {
       await userService.updateUser(user.id, form as UpdateUserRequest);
@@ -83,29 +89,14 @@ export default function UserInfoCard() {
               {user?.email}
               </p>
             </div>
-
-            {/* <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Phone
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                +09 363 398 46
-              </p>
-            </div> */}
-
-            {/* <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Bio
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Team Manager
-              </p>
-            </div> */}
           </div>
         </div>
 
         <button
-          onClick={openModal}
+        onClick={() => {
+          resetErrors();
+          openModal();
+        }}
           className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
         >
           <svg
@@ -139,39 +130,6 @@ export default function UserInfoCard() {
           </div>
           <form className="flex flex-col">
             <div className="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
-              {/* <div>
-                <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
-                  Social Links
-                </h5>
-
-                <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                  <div>
-                    <Label>Facebook</Label>
-                    <Input
-                      type="text"
-                      value="https://www.facebook.com/PimjoHQ"
-                    />
-                  </div>
-
-                  <div>
-                    <Label>X.com</Label>
-                    <Input type="text" value="https://x.com/PimjoHQ" />
-                  </div>
-
-                  <div>
-                    <Label>Linkedin</Label>
-                    <Input
-                      type="text"
-                      value="https://www.linkedin.com/company/pimjo"
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Instagram</Label>
-                    <Input type="text" value="https://instagram.com/PimjoHQ" />
-                  </div>
-                </div>
-              </div> */}
               <div className="mt-7">
                 <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
                   Personal Information
@@ -180,28 +138,30 @@ export default function UserInfoCard() {
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                   <div className="col-span-2 lg:col-span-1">
                     <Label>Name</Label>
-                    <Input type="text"  name="name" value={form.name || ""} onChange={handleChange}/>
+                    <Input
+                        type="text"
+                        name="name"
+                        value={form.name}
+                        onBlur={(e) => handleBlur("name", e.target.value)}
+                        onChange={handleChange}
+                      />
+                      {errors.name && (
+                        <p className="text-sm text-red-500 mt-1">{errors.name}</p>
+                      )}
                   </div>
-
-                  {/* <div className="col-span-2 lg:col-span-1">
-                    <Label>Last Name</Label>
-                    <Input type="text" value="Chowdhury" />
-                  </div> */}
-
                   <div className="col-span-2 lg:col-span-1">
                     <Label>Email</Label>
-                    <Input type="text" name="email" value={form.email || ""} onChange={handleChange}/>
+                    <Input
+                        type="text"
+                        name="email"
+                        value={form.email}
+                        onBlur={(e) => handleBlur("email", e.target.value)}
+                        onChange={handleChange}
+                      />
+                      {errors.email && (
+                        <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+                      )}
                   </div>
-
-                  {/* <div className="col-span-2 lg:col-span-1">
-                    <Label>Phone</Label>
-                    <Input type="text" value="+09 363 398 46" />
-                  </div>
-
-                  <div className="col-span-2">
-                    <Label>Bio</Label>
-                    <Input type="text" value="Team Manager" />
-                  </div> */}
                 </div>
               </div>
             </div>

@@ -9,6 +9,7 @@ import { GetUserResponse } from "../../model";
 import { RoleType } from "../../enums";
 import { EyeIcon, EyeCloseIcon } from "../../icons";
 import Loading from "../../loading/Loading";
+import { useUserValidation } from "../../hooks/useUserValidation";
 
 export default function UserMetaCard() {
   const { isOpen, openModal, closeModal } = useModal();
@@ -17,14 +18,15 @@ export default function UserMetaCard() {
   // form states
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showOld, setShowOld] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-
+  const { errors, handleBlur, validateAll, clearError } = useUserValidation(
+  {oldPassword, newPassword , confirmNewPassword});
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -47,12 +49,12 @@ export default function UserMetaCard() {
     e.preventDefault();
     setError(null);
     setMessage(null);
-
-    if (!oldPassword || !newPassword || !confirmPassword) {
+    if (!validateAll()) return;
+    if (!oldPassword || !newPassword || !confirmNewPassword) {
       setError("Please fill in all fields.");
       return;
     }
-    if (newPassword !== confirmPassword) {
+    if (newPassword !== confirmNewPassword) {
       setError("New passwords do not match.");
       return;
     }
@@ -63,7 +65,7 @@ export default function UserMetaCard() {
       setMessage("Password updated successfully!");
       setOldPassword("");
       setNewPassword("");
-      setConfirmPassword("");
+      setConfirmNewPassword("");
 
       // auto close after 1.5s
       setTimeout(() => {
@@ -140,7 +142,11 @@ export default function UserMetaCard() {
                 <Input
                   type={showOld ? "text" : "password"}
                   value={oldPassword}
-                  onChange={e => setOldPassword(e.target.value)}
+                  onChange={(e) => {
+                    setOldPassword(e.target.value);
+                    clearError("oldPassword");
+                  }}
+                  onBlur={() => handleBlur("oldPassword", oldPassword)}
                   placeholder="Enter current password"
                 />
                 <span
@@ -154,6 +160,9 @@ export default function UserMetaCard() {
                   )}
                 </span>
               </div>
+              {errors.oldPassword && (
+                <p className="text-sm text-red-500 dark:text-red-400">{errors.oldPassword}</p>
+              )}
             </div>
 
             {/* New password */}
@@ -163,7 +172,11 @@ export default function UserMetaCard() {
                 <Input
                   type={showNew ? "text" : "password"}
                   value={newPassword}
-                  onChange={e => setNewPassword(e.target.value)}
+                  onChange={(e) => {
+                    setNewPassword(e.target.value);
+                    clearError("newPassword");
+                  }}
+                  onBlur={() => handleBlur("newPassword", newPassword)}
                   placeholder="Enter new password"
                 />
                 <span
@@ -177,6 +190,9 @@ export default function UserMetaCard() {
                   )}
                 </span>
               </div>
+              {errors.newPassword && (
+                <p className="text-sm text-red-500 dark:text-red-400">{errors.newPassword}</p>
+              )}
             </div>
 
             {/* Confirm password */}
@@ -185,8 +201,12 @@ export default function UserMetaCard() {
               <div className="relative">
                 <Input
                   type={showConfirm ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)}
+                  value={confirmNewPassword}
+                  onChange={(e) => {
+                    setConfirmNewPassword(e.target.value);
+                    clearError("confirmNewPassword");
+                  }}
+                  onBlur={() => handleBlur("confirmNewPassword", confirmNewPassword)}
                   placeholder="Re-enter new password"
                 />
                 <span
@@ -200,6 +220,9 @@ export default function UserMetaCard() {
                   )}
                 </span>
               </div>
+              {errors.confirmNewPassword && (
+                <p className="text-sm text-red-500 dark:text-red-400">{errors.confirmNewPassword}</p>
+              )}
             </div>
 
             {error && (
@@ -225,7 +248,7 @@ export default function UserMetaCard() {
                 size="sm"
                 type="submit"
                 disabled={loading}
-                className={`w-32 bg-blue-600 text-white hover:bg-blue-700 opacity-70 cursor-not-allowed `}
+                className={`w-32 bg-blue-600 text-white hover:bg-blue-700 opacity-70 `}
               >
                 Save Changes
               </Button>

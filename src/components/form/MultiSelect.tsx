@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Option {
   value: string;
@@ -12,6 +12,7 @@ interface MultiSelectProps {
   defaultSelected?: string[];
   onChange?: (selected: string[]) => void;
   disabled?: boolean;
+  onBlur?: () => void;
 }
 
 const MultiSelect: React.FC<MultiSelectProps> = ({
@@ -20,11 +21,12 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   defaultSelected = [],
   onChange,
   disabled = false,
+  onBlur
 }) => {
   const [selectedOptions, setSelectedOptions] =
     useState<string[]>(defaultSelected);
   const [isOpen, setIsOpen] = useState(false);
-
+  const containerRef = useRef<HTMLDivElement>(null);
   const toggleDropdown = () => {
     if (!disabled) setIsOpen((prev) => !prev);
   };
@@ -48,8 +50,22 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     (value) => options.find((option) => option.value === value)?.text || ""
   );
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+        onBlur?.(); 
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onBlur]);
+
   return (
-    <div className="w-full">
+    <div className="w-full" ref={containerRef}>
       <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
         {label}
       </label>

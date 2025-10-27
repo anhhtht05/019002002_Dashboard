@@ -6,6 +6,9 @@ import { ModelType, HardwareType } from "../../enums";
 import MultiSelect from "../form/MultiSelect";
 import Label from "../form/Label";
 import Loading from "../../loading/Loading.tsx";
+import { useFirmwareValidation } from "../../hooks/useFirmwareValidation";
+import Input from "../form/input/InputField.tsx";
+import TextArea from "../form/input/TextArea.tsx";
 
 interface Props {
   firmware: any;
@@ -18,18 +21,21 @@ export default function UpdateFirmwareModal({ firmware, onClose, onSuccess }: Pr
     description: firmware.description || "",
     modelCompat: firmware.modelCompat || [],
     hardwareCompat: firmware.hardwareCompat || [],
-    status: firmware.status || "DRAFT",
   });
   const [loading, setLoading] = useState(false);
+  const { errors, validateAll, handleBlur, clearError } = useFirmwareValidation(form);
 
   const handleChange = (key: keyof UpdateFirmwareRequest, value: any) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+    clearError(key);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateAll()) return;
     setLoading(true);
     try {
+      console.log(form);
       await firmwareService.updateFirmware(firmware.id, form);
       onSuccess?.({
         type: "success",
@@ -41,7 +47,7 @@ export default function UpdateFirmwareModal({ firmware, onClose, onSuccess }: Pr
       onSuccess?.({
         type: "error",
         title: "Update failed",
-        message: `Upload failed: ${err.response.data.error?.message}` || "Failed to update firmware. Please try again.",
+        message: `Update failed: ${err.response.data.error?.message}` || "Failed to update firmware. Please try again.",
       });
     } finally {
       setLoading(false);
@@ -65,56 +71,71 @@ export default function UpdateFirmwareModal({ firmware, onClose, onSuccess }: Pr
         <h2 className="text-3xl font-semibold text-gray-800 dark:text-gray-100 text-center mb-8">
           Update Firmware
         </h2>
+        <form onSubmit={handleSubmit} className="w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+            <div className="w-full">
+              <Label htmlFor="version">Version</Label>
+              <Input
+                id="version"
+                type="text"
+                value={firmware.version}  
+                disabled={true}       
+                />
+            </div>
 
-        <form onSubmit={handleSubmit} className="w-full space-y-8">
-          {/* Description */}
-          <div className="w-full">
-            <Label>Description</Label>
-            <textarea
-              value={form.description}
-              onChange={(e) => handleChange("description", e.target.value)}
-              rows={5}
-              placeholder="Enter firmware description..."
-              className="w-full border border-gray-300 dark:border-gray-700 rounded-md p-3 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-          </div>
+            <div className="w-full">
+              <Label htmlFor="firmwareName">Firmware Name</Label>
+              <Input
+                id="firmwareName"
+                type="text"
+                value={firmware.name}
+                disabled={true}
+              />
+            </div>
 
-          {/* Compatibility row */}
-          <div className="flex flex-col md:flex-row gap-6 mt-2">
-            {/* Model Compatibility */}
-            <div className="flex-1">
+            <div className="md:col-span-2 w-full">
+              <Label htmlFor="description">Description</Label>
+              <TextArea
+                value={form.description}
+                onBlur={() => handleBlur("description")}
+                onChange={(value) => handleChange("description", value)}
+                rows={6}
+                className="w-full"
+              />
+              {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+            </div>
+
+            <div className="w-full"
+            tabIndex={0}
+            onBlur={() => handleBlur("modelCompat")}>
               <MultiSelect
                 label="Model Compatibility"
-                options={Object.values(ModelType).map((v) => ({
-                  text: v,
-                  value: v,
-                }))}
+                options={Object.values(ModelType).map((v) => ({ text: v, value: v }))}
                 defaultSelected={form.modelCompat}
                 onChange={(values) => handleChange("modelCompat", values)}
               />
+              {errors.modelCompat && (<p className="text-red-500 text-sm mt-1">{errors.modelCompat}</p>)}
             </div>
 
-            {/* Hardware Compatibility */}
-            <div className="flex-1">
+            <div className="w-full"
+            tabIndex={0}
+            onBlur={() => handleBlur("hardwareCompat")}>
               <MultiSelect
                 label="Hardware Compatibility"
-                options={Object.values(HardwareType).map((v) => ({
-                  text: v,
-                  value: v,
-                }))}
+                options={Object.values(HardwareType).map((v) => ({ text: v, value: v }))}
                 defaultSelected={form.hardwareCompat}
                 onChange={(values) => handleChange("hardwareCompat", values)}
               />
+              {errors.hardwareCompat && (<p className="text-red-500 text-sm mt-1">{errors.hardwareCompat}</p>)}
             </div>
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-4 rounded-lg bg-blue-600 text-white py-3 font-medium hover:bg-blue-700 active:scale-[0.98] disabled:bg-gray-400 transition-all duration-200 shadow-md"
+            className="mt-8 w-full rounded-lg bg-blue-600 text-white py-3.5 font-medium text-lg hover:bg-blue-700 active:scale-[0.98] disabled:bg-gray-400 transition-all duration-200 shadow-md"
           >
-            Update Firmware
+            Upload Firmware
           </button>
         </form>
       </div>
